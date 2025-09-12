@@ -35,6 +35,18 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   pluto_grid: ^8.0.0
+  get: ^4.6.5
+  responsive_framework: ^1.5.1
+  package_info_plus: ^9.0.0
+  flutter_easyloading: ^3.0.5
+  dio: ^5.9.0
+  logger: ^2.6.1
+  encrypt: ^5.0.3
+  path_provider: ^2.1.5
+  toastification: ^3.0.3
+  share_plus: ^12.0.0
+
+
 
 dev_dependencies:
   flutter_test:

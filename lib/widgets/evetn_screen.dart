@@ -1,3 +1,4 @@
+import 'package:ankoot_new/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 
@@ -233,7 +234,6 @@ class EventSelectionCard extends StatelessWidget {
               itemCount: events.length,
               itemBuilder: (context, index) {
                 bool isSelected = index == selectedIndex;
-
                 return InkWell(
                   onTap: () => onEventSelected(index),
                   borderRadius: BorderRadius.circular(8),
@@ -244,12 +244,12 @@ class EventSelectionCard extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? Theme.of(context).primaryColor
+                          ? AppTheme.primaryColors
                           : Colors.transparent,
                       borderRadius: index == 0 ? BorderRadius.only(topLeft: Radius.circular(8),):BorderRadius.circular(8),
                       border: Border.all(
                         color: isSelected
-                            ? Theme.of(context).primaryColor
+                            ? AppTheme.primaryColors
                             : Colors.transparent,
                         width: 1.5,
                       ),
@@ -282,7 +282,7 @@ class EventSelectionCard extends StatelessWidget {
               icon: Icon(Icons.add, size: 18),
               label: Text('Add New'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: Colors.deepOrange,
                 foregroundColor: Colors.white,
                 elevation: 2,
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -574,7 +574,9 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
         rows: rows,
         onLoaded: (PlutoGridOnLoadedEvent event) {
           stateManager = event.stateManager;
-          stateManager.setShowColumnFilter(false);
+          stateManager.setShowColumnFilter(true);
+          stateManager.setSelectingMode(PlutoGridSelectingMode.cell);
+
         },
         onChanged: (PlutoGridOnChangedEvent event) {
           // Handle cell value changes
@@ -587,10 +589,10 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
             gridBackgroundColor: Colors.white,
             rowColor: Colors.white,
             oddRowColor: Colors.grey[50],
-            // activatedColor: Colors.blue[50],
             gridBorderColor: Colors.grey[300]!,
             borderColor: Colors.grey[400]!,
-            activatedBorderColor: Colors.blue,
+            activatedColor: AppTheme.primaryColors.withOpacity(0.1),
+            activatedBorderColor: AppTheme.primaryColors.withOpacity(0.7),
             inactivatedBorderColor: Colors.grey[300]!,
             columnTextStyle: TextStyle(
               color: Colors.grey[800],
@@ -602,6 +604,7 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
               fontSize: 12,
             ),
             columnHeight: 45,
+
             rowHeight: 50,
             defaultColumnTitlePadding: EdgeInsets.symmetric(horizontal: 8),
             defaultCellPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -610,6 +613,7 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
             autoSizeMode: PlutoAutoSizeMode.scale,
             resizeMode: PlutoResizeMode.normal,
           ),
+          columnFilter: PlutoGridColumnFilterConfig(),
           scrollbar: PlutoGridScrollbarConfig(
             isAlwaysShown: false,
             // scrollbarColor: Colors.grey[300],

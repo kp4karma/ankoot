@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 import 'dart:convert';
 
+import '../theme/app_theme.dart';
+
 class SweetItemsScreen extends StatefulWidget {
   static const routeName = 'feature/sweet-items-pradesh';
 
@@ -85,7 +87,7 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
         enableRowChecked: false,
         renderer: (c) {
           IconData icon = c.row.type.isGroup ? Icons.location_city : Icons.store;
-          Color iconColor = c.row.type.isGroup ? Colors.blue : Colors.green;
+          Color iconColor = c.row.type.isGroup ? Colors.deepOrange : Colors.green;
 
           return Row(
             children: [
@@ -203,7 +205,7 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
 
           return Center(
             child: IconButton(
-              icon: const Icon(Icons.phone, color: Colors.blue, size: 20),
+              icon: const Icon(Icons.phone, color: Colors.deepOrange, size: 20),
               onPressed: () => _handleCall(c.row),
               tooltip: 'Call for ${c.row.cells['itemName']?.value}',
             ),
@@ -221,7 +223,7 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
           if (c.row.type.isGroup) return const SizedBox();
 
           final remaining = c.row.cells['remainingQty']?.value as int? ?? 0;
-          Color iconColor = remaining > 0 ? Colors.orange : Colors.grey;
+          Color iconColor = remaining > 0 ? AppTheme.primaryColors : Colors.white;
 
           return Center(
             child: IconButton(
@@ -229,6 +231,7 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
               onPressed: remaining > 0 ? () => _handleNotify(c.row) : null,
               tooltip: 'Send notification for ${c.row.cells['itemName']?.value}',
             ),
+
           );
         },
       ),
@@ -384,8 +387,8 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
                       rows: rows,
                       configuration: const PlutoGridConfiguration(
                         style: PlutoGridStyleConfig(
-                          cellColorGroupedRow: Color(0x80FFF3E0),
-                          gridBorderColor: Colors.orange,
+                          cellColorGroupedRow: Colors.deepOrange,
+                          gridBorderColor: Colors.deepOrange,
                           activatedBorderColor: Colors.deepOrange,
                           rowHeight: 45,
                           columnHeight: 50,

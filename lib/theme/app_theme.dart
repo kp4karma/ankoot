@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryBlue = Color(0xFF1976D2);
+  static const Color primaryColors = Colors.deepOrange;
   static const Color backgroundGrey = Color(0xFFF5F5F5);
   static const Color cardWhite = Colors.white;
   static const Color textDark = Color(0xFF212121);
@@ -66,7 +66,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryBlue,
+          backgroundColor: primaryColors,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(

@@ -1,4 +1,5 @@
 // lib/widgets/main_content.dart
+import 'package:ankoot_new/theme/app_theme.dart';
 import 'package:ankoot_new/widgets/evetn_screen.dart';
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
@@ -92,7 +93,7 @@ class MainContent extends StatelessWidget {
                         color: Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
-                          side: BorderSide(color: Colors.blue),
+                          side: BorderSide(color: AppTheme.primaryColors),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),

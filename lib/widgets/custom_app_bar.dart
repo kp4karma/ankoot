@@ -1,4 +1,5 @@
 // lib/widgets/custom_app_bar.dart
+import 'package:ankoot_new/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -20,7 +21,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           const Text(
             'Ankoot',
             style: TextStyle(
-              color: Colors.blue,
+              color: AppTheme.primaryColors,
               fontWeight: FontWeight.bold,
               fontSize: 20,
             ),
@@ -51,8 +52,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: TextButton(
             onPressed: () => onNavigationChanged(item),
             style: TextButton.styleFrom(
-              foregroundColor: isSelected ? Colors.blue : Colors.grey[700],
-              backgroundColor: isSelected ? Colors.blue.withOpacity(0.1) : null,
+              foregroundColor: isSelected ? AppTheme.primaryColors : Colors.grey[700],
+              backgroundColor: isSelected ? AppTheme.primaryColors.withOpacity(0.1) : null,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
             child: Text(

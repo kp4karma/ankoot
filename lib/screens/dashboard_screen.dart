@@ -74,12 +74,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               users: _users,
               selectedUser: _selectedUser,
               onUserSelected: _onUserSelected,
+              
             ),
           ),
         ),
         MainContent(
           selectedUser: _selectedUser,
           deliveryLists: _deliveryLists,
+
 
           onNotifyPressed: _onNotifyPressed,
         ),

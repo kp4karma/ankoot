@@ -47,6 +47,7 @@ class Sidebar extends StatelessWidget {
             user: user,
             isSelected: selectedUser?.id == user.id,
             onTap: () => onUserSelected(user),
+
           );
         },
       ),

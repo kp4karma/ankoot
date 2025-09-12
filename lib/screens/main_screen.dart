@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 
 import '../widgets/custom_app_bar.dart';
+import '../widgets/events_tabbar_screen.dart';
 import '../widgets/sidebar.dart';
 import '../widgets/main_content.dart';
 
@@ -36,7 +37,7 @@ class _MainScreenState extends State<MainScreen> {
       case "Event Item":
         return SweetItemsScreen();
       case "Events":
-        return SizedBox();
+        return EventsScreen();
       default:
         return SizedBox();
     }

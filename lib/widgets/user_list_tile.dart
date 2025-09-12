@@ -1,6 +1,7 @@
 // lib/widgets/user_list_tile.dart
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
+import '../theme/app_theme.dart';
 import 'user_avatar.dart';
 
 class UserListTile extends StatelessWidget {
@@ -20,12 +21,12 @@ class UserListTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : Colors.grey.shade50,
+        color: isSelected ? AppTheme.primaryColors.withOpacity(0.1) : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(8),
         border: isSelected
             ? Border(
           left: BorderSide(
-            color: Theme.of(context).primaryColor,
+            color: AppTheme.primaryColors,
             width: 4,
           ),
         )
