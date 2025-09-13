@@ -187,9 +187,9 @@ class _EventFormDialogState extends State<EventFormDialog> {
       );
 
       if (widget.event == null) {
-        controller.addEvent(event);
+        // controller.addEvent(event);
       } else {
-        controller.updateEvent(event);
+        // controller.updateEvent(event);
       }
     }
   }

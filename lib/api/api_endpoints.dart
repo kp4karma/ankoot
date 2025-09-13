@@ -57,5 +57,7 @@ class ApiConfig {
 class ApiEndpoints {
   static String get refresh => "NOT USED";
   static String get login => "${ApiConfig.baseUrl}/login/";
+  static String get getData => "${ApiConfig.baseUrl}/getData/";
+  static String get getPradeshItems => "${ApiConfig.baseUrl}/getPradeshItems/";
 
 }

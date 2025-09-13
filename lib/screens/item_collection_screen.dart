@@ -1,57 +1,41 @@
-
-import 'package:ankoot_new/models/user_model.dart';
-import 'package:ankoot_new/services.dart';
-import 'package:ankoot_new/widgets/main_content.dart';
-import 'package:ankoot_new/widgets/sidebar.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../controller/pradesh_item_controller.dart';
+import '../models/pradesh_items_data_model.dart';
+import '../widgets/main_content.dart';
+import '../widgets/sidebar.dart';
 
 class ItemCollectionScreen extends StatefulWidget {
   const ItemCollectionScreen({Key? key}) : super(key: key);
 
   @override
-  State<ItemCollectionScreen> createState() => _DashboardScreenState();
+  State<ItemCollectionScreen> createState() => _ItemCollectionScreenState();
 }
 
-class _DashboardScreenState extends State<ItemCollectionScreen> {
-
-  UserModel? _selectedUser;
-  List<UserModel> _users = [];
-  List<DeliveryListModel> _deliveryLists = [];
-  final DataService _dataService = DataService();
+class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
+  final PradeshController pradeshController = Get.put(PradeshController());
+  PradeshData? _selectedPradesh;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    // load default with eventId = 1 (you can pass dynamically)
+    pradeshController.fetchPradeshItems(1);
   }
 
-  void _loadData() {
+  void _onPradeshSelected(PradeshData pradesh) {
     setState(() {
-      _users = _dataService.getUsers();
-      if (_users.isNotEmpty) {
-        _selectedUser = _users.first;
-        _deliveryLists = _dataService.getDeliveryListsForUser(
-          _selectedUser!.id,
-        );
-      }
-    });
-  }
-
-
-
-  void _onUserSelected(UserModel user) {
-    setState(() {
-      _selectedUser = user;
-      _deliveryLists = _dataService.getDeliveryListsForUser(user.id);
+      _selectedPradesh = pradesh;
     });
   }
 
   void _onNotifyPressed() {
-    // Handle notify user
+    if (_selectedPradesh == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Notification sent to ${_selectedUser?.name}'),
+        content:
+        Text('Notification sent to ${_selectedPradesh?.pradeshEngName}'),
         backgroundColor: Colors.green,
       ),
     );
@@ -59,29 +43,26 @@ class _DashboardScreenState extends State<ItemCollectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-
     return Row(
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 16,bottom: 16),
+          padding: const EdgeInsets.only(left: 16, bottom: 16),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Sidebar(
-              users: _users,
-              selectedUser: _selectedUser,
-              onUserSelected: _onUserSelected,
+              onPradeshSelected: _onPradeshSelected,
+              selectedPradesh: _selectedPradesh, // <-- pass selected
             ),
+
           ),
         ),
-        MainContent(
-          selectedUser: _selectedUser,
-          deliveryLists: _deliveryLists,
-
-          onNotifyPressed: _onNotifyPressed,
+        Expanded(
+          child: MainContent(
+            selectedPradesh: _selectedPradesh,
+            onNotifyPressed: _onNotifyPressed,
+          ),
         ),
       ],
     );
-    ;
   }
 }

@@ -1,12 +1,10 @@
-// lib/screens/events_tabbar_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controller/event_controller.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
-import '../models/event.dart';
+import '../controller/event_controller.dart';
+import '../models/event_data_model.dart'; // <-- use Data model
 import '../theme/app_theme.dart';
-import 'event_form_dialog.dart';
 
 class EventsScreen extends StatelessWidget {
   final EventController eventController = Get.put(EventController());
@@ -15,7 +13,10 @@ class EventsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Events Management',style: TextStyle(color:AppTheme.primaryColors),),
+        title: const Text(
+          'Events Management',
+          style: TextStyle(color: AppTheme.primaryColors),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: const Color(0xFF2D3748),
@@ -38,9 +39,14 @@ class EventsScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Obx(() => eventController.events.isEmpty
-            ? _buildEmptyState()
-            : _buildEventsList()),
+        child: Obx(() {
+          if (eventController.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return eventController.events.isEmpty
+              ? _buildEmptyState()
+              : _buildEventsList();
+        }),
       ),
     );
   }
@@ -53,7 +59,7 @@ class EventsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color:  AppTheme.primaryColors.withOpacity(0.1),
+              color: AppTheme.primaryColors.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -85,9 +91,10 @@ class EventsScreen extends StatelessWidget {
             icon: const Icon(Icons.add),
             label: const Text('Create Event'),
             style: ElevatedButton.styleFrom(
-              backgroundColor:  AppTheme.primaryColors,
+              backgroundColor: AppTheme.primaryColors,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             ),
           ),
         ],
@@ -96,14 +103,14 @@ class EventsScreen extends StatelessWidget {
   }
 
   Widget _buildEventsList() {
-    return  _buildDesktopGrid();
+    return _buildDesktopGrid();
   }
 
   Widget _buildMobileList() {
     return ListView.builder(
       itemCount: eventController.events.length,
       itemBuilder: (context, index) {
-        final event = eventController.events[index];
+        final Data event = eventController.events[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           child: ListTile(
@@ -118,14 +125,14 @@ class EventsScreen extends StatelessWidget {
                 color: Color(0xFF1976D2),
               ),
             ),
-            title: Text(event.name),
+            title: Text(event.eventName ?? ''),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(event.description),
+                Text(event.eventDesc ?? ''),
                 const SizedBox(height: 4),
                 Text(
-                  '${event.date.day}/${event.date.month}/${event.date.year} - ${event.location}',
+                  '${event.eventDate ?? ''} - ${event.eventLocation ?? ''}',
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 12,
@@ -156,7 +163,8 @@ class EventsScreen extends StatelessWidget {
                   value: 'delete',
                   child: ListTile(
                     leading: Icon(Icons.delete, color: Colors.red),
-                    title: Text('Delete', style: TextStyle(color: Colors.red)),
+                    title: Text('Delete',
+                        style: TextStyle(color: Colors.red)),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -174,13 +182,13 @@ class EventsScreen extends StatelessWidget {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
         maxCrossAxisExtent: 400,
-        childAspectRatio: 1.5/1,
+        childAspectRatio: 1.5 / 1,
       ),
       itemCount: eventController.events.length,
       itemBuilder: (context, index) {
-        final event = eventController.events[index];
+        final Data event = eventController.events[index];
         return Card(
-          color:  Colors.white,
+          color: Colors.white,
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -240,7 +248,8 @@ class EventsScreen extends StatelessWidget {
                           value: 'delete',
                           child: ListTile(
                             leading: Icon(Icons.delete, color: Colors.red),
-                            title: Text('Delete', style: TextStyle(color: Colors.red)),
+                            title: Text('Delete',
+                                style: TextStyle(color: Colors.red)),
                             contentPadding: EdgeInsets.zero,
                           ),
                         ),
@@ -250,7 +259,7 @@ class EventsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  event.name,
+                  event.eventName ?? '',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -259,7 +268,7 @@ class EventsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  event.description,
+                  event.eventDesc ?? '',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],
@@ -279,7 +288,7 @@ class EventsScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${event.date.day}/${event.date.month}/${event.date.year}',
+                      event.eventDate ?? '',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -294,7 +303,7 @@ class EventsScreen extends StatelessWidget {
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
-                        event.location,
+                        event.eventLocation ?? '',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],
@@ -312,7 +321,7 @@ class EventsScreen extends StatelessWidget {
     );
   }
 
-  void _handleMenuAction(String action, Event event) {
+  void _handleMenuAction(String action, Data event) {
     switch (action) {
       case 'edit':
         _showEventDialog(Get.context!, event: event);
@@ -326,18 +335,20 @@ class EventsScreen extends StatelessWidget {
     }
   }
 
-  void _showEventDialog(BuildContext context, {Event? event}) {
+  void _showEventDialog(BuildContext context, {Data? event}) {
+    // replace with your EventFormDialog later, now just placeholder
     showDialog(
       context: context,
-      builder: (context) => EventFormDialog(event: event),
+      builder: (context) =>
+          AlertDialog(content: Text("Event dialog for ${event?.eventName}")),
     );
   }
 
-  void _showDeleteDialog(Event event) {
+  void _showDeleteDialog(Data event) {
     Get.dialog(
       AlertDialog(
         title: const Text('Delete Event'),
-        content: Text('Are you sure you want to delete "${event.name}"?'),
+        content: Text('Are you sure you want to delete "${event.eventName}"?'),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
@@ -345,7 +356,7 @@ class EventsScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              eventController.deleteEvent(event.id);
+              eventController.deleteEvent(event.eventId);
               Get.back();
             },
             style: ElevatedButton.styleFrom(

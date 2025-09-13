@@ -1,10 +1,10 @@
-
-import 'package:ankoot_new/models/user_model.dart';
-import 'package:ankoot_new/services.dart';
-import 'package:ankoot_new/widgets/main_content.dart';
-import 'package:ankoot_new/widgets/sidebar.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../controller/pradesh_item_controller.dart';
+import '../models/pradesh_items_data_model.dart';
+import '../widgets/main_content.dart';
+import '../widgets/sidebar.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -14,29 +14,14 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-
-  String _currentPage = 'User Management';
-  UserModel? _selectedUser;
-  List<UserModel> _users = [];
-  List<DeliveryListModel> _deliveryLists = [];
-  final DataService _dataService = DataService();
+  final PradeshController pradeshController = Get.put(PradeshController());
+  String _currentPage = 'Pradesh Management';
+  PradeshData? _selectedPradesh;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
-  }
-
-  void _loadData() {
-    setState(() {
-      _users = _dataService.getUsers();
-      if (_users.isNotEmpty) {
-        _selectedUser = _users.first;
-        _deliveryLists = _dataService.getDeliveryListsForUser(
-          _selectedUser!.id,
-        );
-      }
-    });
+    pradeshController.fetchPradeshItems(1);
   }
 
   void _onNavigationChanged(String page) {
@@ -45,18 +30,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  void _onUserSelected(UserModel user) {
+  void _onPradeshSelected(PradeshData pradesh) {
     setState(() {
-      _selectedUser = user;
-      _deliveryLists = _dataService.getDeliveryListsForUser(user.id);
+      _selectedPradesh = pradesh;
     });
   }
 
   void _onNotifyPressed() {
-    // Handle notify user
+    if (_selectedPradesh == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Notification sent to ${_selectedUser?.name}'),
+        content:
+        Text('Notification sent to ${_selectedPradesh?.pradeshEngName}'),
         backgroundColor: Colors.green,
       ),
     );
@@ -67,26 +52,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Row(
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 16,bottom: 16),
+          padding: const EdgeInsets.only(left: 16, bottom: 16),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Sidebar(
-              users: _users,
-              selectedUser: _selectedUser,
-              onUserSelected: _onUserSelected,
-              
+              onPradeshSelected: _onPradeshSelected,
+              selectedPradesh: _selectedPradesh, // <-- pass selected
             ),
           ),
         ),
-        MainContent(
-          selectedUser: _selectedUser,
-          deliveryLists: _deliveryLists,
+        Expanded(
+          child: MainContent(
 
-
-          onNotifyPressed: _onNotifyPressed,
+            selectedPradesh: _selectedPradesh,
+            onNotifyPressed: _onNotifyPressed,
+          ),
         ),
       ],
     );
-    ;
   }
 }

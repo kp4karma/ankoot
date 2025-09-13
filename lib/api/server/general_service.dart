@@ -1,10 +1,11 @@
 import 'package:ankoot_new/api/api_endpoints.dart';
+import 'package:ankoot_new/models/event_data_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dio/dio.dart';
 
 import '../../helper/toast/toast_helper.dart';
-import '../../models/event.dart'; // <- where your UserDataModel, UserData, User are defined
+import '../../models/pradesh_items_data_model.dart' hide Data;
 import '../../models/user_data_model.dart';
 import '../api_client.dart';
 
@@ -67,4 +68,81 @@ class GeneralService {
       EasyLoading.dismiss();
     }
   }
+
+  static Future<List<Data>> fetchEvents() async {
+    try {
+      EasyLoading.show(status: "Fetching events...");
+
+      final Response response = await ApiClient.post(
+        ApiEndpoints.getData,
+        data: {"table": "event"},
+      );
+
+      print("🔹 [Event] Status: ${response.statusCode}");
+      print("🔹 [Event] Response: ${response.data}");
+
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        final eventDataModel = EventDataModel.fromJson(response.data);
+
+        if (eventDataModel.errorStatus == true) {
+          EasyLoading.showError("Failed to fetch events");
+          return [];
+        }
+
+        return eventDataModel.data ?? [];
+      } else {
+        EasyLoading.showError("API Error: ${response.statusMessage}");
+        return [];
+      }
+    } catch (e, stack) {
+      print("❌ [Event] Error: $e");
+      print(stack);
+      EasyLoading.showError("Something went wrong: $e");
+      return [];
+    } finally {
+      EasyLoading.dismiss();
+    }
+  }
+
+
+  static Future<PradeshItemsDataModel?> fetchPradeshItems(int eventId) async {
+    try {
+      EasyLoading.show(status: "Fetching Pradesh Items...");
+
+      final Response response = await ApiClient.post(
+        ApiEndpoints.getPradeshItems,
+        data: {"event_id": eventId},
+      );
+
+      print("🔹 [Pradesh] Status: ${response.statusCode}");
+      print("🔹 [Pradesh] Response: ${response.data}");
+
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        final dataModel = PradeshItemsDataModel.fromJson(response.data);
+
+        if (dataModel.errorStatus == true) {
+          EasyLoading.showError("Failed to fetch Pradesh items");
+          return null;
+        }
+        return dataModel;
+      } else {
+        EasyLoading.showError("API Error: ${response.statusMessage}");
+        return null;
+      }
+    } catch (e, stack) {
+      print("❌ [Pradesh] Error: $e");
+      print(stack);
+      EasyLoading.showError("Something went wrong: $e");
+      return null;
+    } finally {
+      EasyLoading.dismiss();
+    }
+  }
+
+
+
 }
