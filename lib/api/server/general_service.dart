@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:ankoot_new/api/api_endpoints.dart';
 import 'package:ankoot_new/models/event_data_model.dart';
+import 'package:ankoot_new/models/evet_items.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dio/dio.dart';
@@ -145,4 +148,17 @@ class GeneralService {
 
 
 
+ static Future<FoodDistributionResponse> getFoodDistributionData() async {
+    try {
+      final Response response = await ApiClient.post(
+        ApiEndpoints.getPradeshItems,
+        data: {},
+      );
+      print(response);
+      final data = FoodDistributionResponse.fromJson(jsonDecode(response.toString()));
+      return data;
+    } catch (e) {
+      throw Exception('Failed to load data: $e');
+    }
+  }
 }

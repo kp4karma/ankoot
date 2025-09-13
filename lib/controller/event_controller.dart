@@ -8,6 +8,7 @@ class EventController extends GetxController {
   final events = <Data>[].obs;   // <-- real Data model
   final isLoading = false.obs;
 
+  
   @override
   void onInit() {
     super.onInit();

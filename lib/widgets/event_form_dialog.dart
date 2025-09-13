@@ -1,8 +1,9 @@
 // lib/widgets/event_form_dialog.dart
+import 'package:ankoot_new/models/evet_items.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/event_controller.dart';
-import '../models/event.dart';
+
 
 class EventFormDialog extends StatefulWidget {
   final Event? event;
@@ -25,10 +26,10 @@ class _EventFormDialogState extends State<EventFormDialog> {
   void initState() {
     super.initState();
     if (widget.event != null) {
-      _nameController.text = widget.event!.name;
-      _descriptionController.text = widget.event!.description;
-      _locationController.text = widget.event!.location;
-      _selectedDate = widget.event!.date;
+      // _nameController.text = widget.event!.name;
+      // _descriptionController.text = widget.event!.description;
+      // _locationController.text = widget.event!.location;
+      // _selectedDate = widget.event!.date;
     }
   }
 
@@ -178,13 +179,13 @@ class _EventFormDialogState extends State<EventFormDialog> {
 
   void _saveEvent() {
     if (_formKey.currentState!.validate() && _selectedDate != null) {
-      final event = Event(
-        id: widget.event?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        name: _nameController.text,
-        description: _descriptionController.text,
-        date: _selectedDate!,
-        location: _locationController.text,
-      );
+      // final event = Event(
+      //   id: widget.event?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      //   name: _nameController.text,
+      //   description: _descriptionController.text,
+      //   date: _selectedDate!,
+      //   location: _locationController.text,
+      // );
 
       if (widget.event == null) {
         // controller.addEvent(event);

@@ -2,14 +2,12 @@
 import 'package:ankoot_new/screens/dashboard_screen.dart';
 import 'package:ankoot_new/screens/evetn_item_screen.dart';
 import 'package:ankoot_new/screens/item_collection_screen.dart';
-import 'package:ankoot_new/services.dart';
 import 'package:flutter/material.dart';
-import '../models/user_model.dart';
+
 
 import '../widgets/custom_app_bar.dart';
 import '../widgets/events_tabbar_screen.dart';
-import '../widgets/sidebar.dart';
-import '../widgets/main_content.dart';
+
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

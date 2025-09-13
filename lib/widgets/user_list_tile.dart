@@ -1,11 +1,11 @@
 // lib/widgets/user_list_tile.dart
+import 'package:ankoot_new/models/user_data_model.dart';
 import 'package:flutter/material.dart';
-import '../models/user_model.dart';
 import '../theme/app_theme.dart';
 import 'user_avatar.dart';
 
 class UserListTile extends StatelessWidget {
-  final UserModel user;
+  final UserDataModel user;
   final bool isSelected;
   final VoidCallback? onTap;
 
@@ -34,19 +34,19 @@ class UserListTile extends StatelessWidget {
       ),
       child: ListTile(
         leading: UserAvatar(
-          name: user.name,
-          avatarUrl: user.avatarUrl,
+          name: user.data?.user?.userName.toString()??"",
+          avatarUrl: user.data?.user?.userName.toString()??"",
           size: 40,
         ),
         title: Text(
-          user.name,
+          user.data?.user?.userName.toString()??"",
           style: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
         ),
         subtitle: Text(
-          user.email,
+          user.data?.user?.userName.toString()??"",
           style: TextStyle(
             color: Colors.grey[600],
             fontSize: 12,

@@ -8,6 +8,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import 'theme/app_theme.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   ApiClient.init();
   runApp(const DeliveryDashApp());
 }
@@ -18,11 +19,10 @@ class DeliveryDashApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'DeliveryDash',
+      title: 'Ankoot',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
-        // 👇 Wrap ResponsiveFramework first, then EasyLoading
         child = ResponsiveBreakpoints.builder(
           child: child!,
           breakpoints: [

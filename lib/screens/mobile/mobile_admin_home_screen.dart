@@ -1,9 +1,13 @@
 // lib/screens/mobile/mobile_home_screen.dart
 
+import 'package:ankoot_new/controller/food_distribution_controller.dart';
+import 'package:ankoot_new/models/evet_items.dart';
 import 'package:ankoot_new/widgets/prasadm.dart';
+import 'package:ankoot_new/widgets/search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:ui' as ui;
@@ -18,44 +22,77 @@ class MobileAdminHomeScreen extends StatefulWidget {
 }
 
 class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
-  // Sample data - replace with your actual data source
-  late User currentUser;
+  FoodDistributionController foodDistributionController = Get.put(
+    FoodDistributionController(),
+  );
 
   // Create a list of GlobalKeys for each card
   final List<GlobalKey> _cardKeys = [];
-  final int _numberOfCards = 3;
 
-  int selectedEventIndex = 0;
+  int selectedEventIndex = 1;
 
   bool isShare = false;
-  // Sample events list
-  final List<Event> events = [
-    Event(id: '1', name: 'Diwali Ankoot - 2025', date: '01/01/2025'),
-    Event(id: '2', name: 'Holi Festival - 2025', date: '15/03/2025'),
-    Event(id: '3', name: 'Navratri - 2025', date: '10/10/2025'),
-    Event(id: '4', name: 'Janmashtami - 2025', date: '20/08/2025'),
-  ];
 
   int _selectedBottomIndex = 0;
+  String _searchQuery = '';
+  List<Pradesh> _filteredPradeshs = [];
+
+  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+        _filterPradeshs();
+      });
+    });
+  }
 
-    // Initialize GlobalKeys for each card
-    for (int i = 0; i < _numberOfCards; i++) {
-      _cardKeys.add(GlobalKey());
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _titleController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  void _filterPradeshs() {
+    if (_searchQuery.isEmpty) {
+      _filteredPradeshs = foodDistributionController.uniquePradeshs.toList();
+    } else {
+      _filteredPradeshs = foodDistributionController.uniquePradeshs.where((
+        pradesh,
+      ) {
+        // Search by pradesh name
+        final pradeshNameMatch =
+            pradesh.pradeshEngName.toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            ) ||
+            pradesh.pradeshGujName.toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            );
+
+        // Search by food items in selected event
+        final itemsMatch = pradesh.events
+            .where((event) => event.eventId == selectedEventIndex)
+            .expand((event) => event.items)
+            .any(
+              (item) =>
+                  item.foodEngName.toLowerCase().contains(
+                    _searchQuery.toLowerCase(),
+                  ) ||
+                  item.foodGujName.toLowerCase().contains(
+                    _searchQuery.toLowerCase(),
+                  ),
+            );
+
+        print(itemsMatch);
+        return pradeshNameMatch || itemsMatch;
+      }).toList();
     }
-
-    // Initialize with sample data
-    currentUser = User(
-      id: '1',
-      name: 'Hari Sumiran',
-      initials: 'HS',
-      contacts: [
-        Contact(name: 'Karma Patel', phone: '6352411412'),
-        Contact(name: 'Raj Singh', phone: '9876543210'),
-      ],
-    );
   }
 
   @override
@@ -65,365 +102,527 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
       appBar: _buildAppBar(),
       floatingActionButton: _buildFloatingBottomNavBar(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildEventChipsRow(),
-          if (_selectedBottomIndex == 1)
-            Expanded(
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        fit: FlexFit.tight,
-                        flex: 1,
-                        child: Text("Sr.",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.black),),
-                      ),
-                      Flexible(
-                        fit: FlexFit.tight,
-                        flex: 5,
-                        child: Text("Pradesh",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.black),),
-                      ),
-                      Flexible(
-                        fit: FlexFit.tight,
-                        flex: 2,
-                        child: Text("Box",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.black),),
-                      ),
-                      Flexible(
-                        fit: FlexFit.tight,
-                        flex: 2,
-                        child: Text("Packet",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.black),),
-                      ),
-                      Flexible(
-                        fit: FlexFit.tight,
-                        flex: 2,
-                        child: Text("Total",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.black),),
-                      ),
-                    ],
-                  ),
-                  Divider(height: 0,),
-                  ListView.builder(
-                    itemCount: 5,
-                    physics: NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Flexible(
-                                  fit: FlexFit.tight,
-                                  flex: 1,
-                                  child: Text("${index+1}",textAlign: TextAlign.center,style: TextStyle(fontSize: 16,color: Colors.black),),
-                                ),
-                                Flexible(
-                                  fit: FlexFit.tight,
-                                  flex: 5,
-                                  child: Text("Pradesh ${index + 1}",textAlign: TextAlign.center,style: TextStyle(fontSize: 16,color: Colors.black),),
-                                ),
-                                Flexible(
-                                  fit: FlexFit.tight,
-                                  flex: 2,
-                                  child: Text("100",textAlign: TextAlign.center,style: TextStyle(fontSize: 16,color: Colors.black),),
-                                ),
-                                Flexible(
-                                  fit: FlexFit.tight,
-                                  flex: 2,
-                                  child: Text("50",textAlign: TextAlign.center,style: TextStyle(fontSize: 16,color: Colors.black),),
-                                ),
-                                Flexible(
-                                  fit: FlexFit.tight,
-                                  flex: 2,
-                                  child: Text("150",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.green.shade900),),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  Row(
-                    children: [
-                      Flexible(
-                        fit: FlexFit.tight,
-                        flex: 1,
-                        child: Text("",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16),),
-                      ),
-                      Flexible(
-                        fit: FlexFit.tight,
-                        flex: 5,
-                        child: Text("Total",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.green.shade900),),
-                      ),
-                      Flexible(
-                        fit: FlexFit.tight,
-                        flex: 2,
-                        child: Text("500",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.blue.shade900),),
-                      ),
-                      Flexible(
-                        fit: FlexFit.tight,
-                        flex: 2,
-                        child: Text("250",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.blue.shade900),),
-                      ),
-                      Flexible(
-                        fit: FlexFit.tight,
-                        flex: 2,
-                        child: Text("750",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.brown),),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            )
-          else
-            Expanded(
-              child: ListView.builder(
-                itemCount: _numberOfCards,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 4,
-                    ),
-                    child: Card(
-                      elevation: 4,
-                      shadowColor: Colors.deepOrange.withAlpha(30),
-                      color: Colors.white,
-                      child: Column(
-                        children: [
-                          RepaintBoundary(
-                            key: _cardKeys[index],
-                            child: Card(
-                              elevation: 0,
-                              shadowColor: Colors.black.withAlpha(30),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              color: Colors.white,
-                              margin: EdgeInsets.zero,
-                              child: Padding(
-                                padding: EdgeInsets.all(0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    MobileUserHeader(
-                                      user: currentUser,
-                                      onContactTap: _onContactTap,
-                                      isShare: isShare,
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0,
-                                        vertical: 8,
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Flexible(
-                                                fit: FlexFit.tight,
-                                                flex: 1,
-                                                child: Text(
-                                                  "Sr.",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ),
-                                              Flexible(
-                                                fit: FlexFit.tight,
-                                                flex: 3,
-                                                child: Text(
-                                                  "Item Name",
-                                                  textAlign: TextAlign.left,
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ),
-                                              Flexible(
-                                                fit: FlexFit.tight,
-                                                flex: 1,
-                                                child: Text(
-                                                  "Qty",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ),
-                                              Flexible(
-                                                fit: FlexFit.tight,
-                                                flex: 2,
-                                                child: Text(
-                                                  "Left Qty",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ),
-                                              Flexible(
-                                                fit: FlexFit.tight,
-                                                flex: 1,
-                                                child: Text(
-                                                  "Unit",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          ListView.builder(
-                                            primary: false,
-                                            padding: EdgeInsets.zero,
-                                            shrinkWrap: true,
-                                            itemCount: 5,
-                                            itemBuilder: (context, itemIndex) {
-                                              return Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      vertical: 4.0,
-                                                    ),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Flexible(
-                                                      fit: FlexFit.tight,
-                                                      flex: 1,
-                                                      child: Text(
-                                                        "${itemIndex + 1}",
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Flexible(
-                                                      fit: FlexFit.tight,
-                                                      flex: 3,
-                                                      child: Text(
-                                                        "Kajukatri",
-                                                        textAlign:
-                                                            TextAlign.left,
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Flexible(
-                                                      fit: FlexFit.tight,
-                                                      flex: 1,
-                                                      child: Text(
-                                                        "30",
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Flexible(
-                                                      fit: FlexFit.tight,
-                                                      flex: 2,
-                                                      child: Text(
-                                                        "10",
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Flexible(
-                                                      fit: FlexFit.tight,
-                                                      flex: 1,
-                                                      child: Text(
-                                                        "kg",
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Divider(),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0,
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  "નોધ:- તા. 23-09-2025. સુધી માં AVD મંદિર એ મોકલી આપવું.",
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: Colors.red,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0,
-                            ),
-                            child: _buildActionButtons(index),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+      body: Obx(
+        () => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildEventChipsRow(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: ReusableSearchBar(
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                    _filterPradeshs();
+                  });
                 },
               ),
             ),
-          // PrasadamWidget(),
-          // SizedBox(height: kBottomNavigationBarHeight),
-        ],
+            if (_selectedBottomIndex == 1)
+              Expanded(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          fit: FlexFit.tight,
+                          flex: 1,
+                          child: Text(
+                            "Sr.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          fit: FlexFit.tight,
+                          flex: 5,
+                          child: Text(
+                            "Pradesh",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          fit: FlexFit.tight,
+                          flex: 2,
+                          child: Text(
+                            "Box",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          fit: FlexFit.tight,
+                          flex: 2,
+                          child: Text(
+                            "Packet",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          fit: FlexFit.tight,
+                          flex: 2,
+                          child: Text(
+                            "Total",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Divider(height: 0),
+                    ListView.builder(
+                      itemCount: 5,
+                      physics: NeverScrollableScrollPhysics(),
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    fit: FlexFit.tight,
+                                    flex: 1,
+                                    child: Text(
+                                      "${index + 1}",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Flexible(
+                                    fit: FlexFit.tight,
+                                    flex: 5,
+                                    child: Text(
+                                      "Pradesh ${index + 1}",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Flexible(
+                                    fit: FlexFit.tight,
+                                    flex: 2,
+                                    child: Text(
+                                      "100",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Flexible(
+                                    fit: FlexFit.tight,
+                                    flex: 2,
+                                    child: Text(
+                                      "50",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Flexible(
+                                    fit: FlexFit.tight,
+                                    flex: 2,
+                                    child: Text(
+                                      "150",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Colors.green.shade900,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    Row(
+                      children: [
+                        Flexible(
+                          fit: FlexFit.tight,
+                          flex: 1,
+                          child: Text(
+                            "",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          fit: FlexFit.tight,
+                          flex: 5,
+                          child: Text(
+                            "Total",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.green.shade900,
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          fit: FlexFit.tight,
+                          flex: 2,
+                          child: Text(
+                            "500",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.blue.shade900,
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          fit: FlexFit.tight,
+                          flex: 2,
+                          child: Text(
+                            "250",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.blue.shade900,
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          fit: FlexFit.tight,
+                          flex: 2,
+                          child: Text(
+                            "750",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.brown,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              )
+            else
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _filteredPradeshs.length,
+                  itemBuilder: (context, index) {
+                    _cardKeys.add(GlobalKey());
+                    Pradesh pradesh =
+                        _filteredPradeshs[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0,
+                        vertical: 4,
+                      ),
+                      child: Card(
+                        elevation: 4,
+                        shadowColor: Colors.deepOrange.withAlpha(30),
+                        color: Colors.white,
+                        child: Column(
+                          children: [
+                            RepaintBoundary(
+                              key: _cardKeys[index],
+                              child: Card(
+                                elevation: 0,
+                                shadowColor: Colors.black.withAlpha(30),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                color: Colors.white,
+                                margin: EdgeInsets.zero,
+                                child: Padding(
+                                  padding: EdgeInsets.all(0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      MobileUserHeader(
+                                        user: User(
+                                          id: "${pradesh.pradeshId}",
+                                          name: '${pradesh.pradeshGujName}',
+                                          initials: '',
+                                          contacts: pradesh.pradeshUsers
+                                              .map(
+                                                (e) => Contact(
+                                                  name: e.userName,
+                                                  phone: e.userMobile,
+                                                ),
+                                              )
+                                              .toList(),
+                                        ),
+                                        onContactTap: _onContactTap,
+                                        isShare: isShare,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0,
+                                          vertical: 8,
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Flexible(
+                                                  fit: FlexFit.tight,
+                                                  flex: 1,
+                                                  child: Text(
+                                                    "Sr.",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Flexible(
+                                                  fit: FlexFit.tight,
+                                                  flex: 3,
+                                                  child: Text(
+                                                    "Item Name",
+                                                    textAlign: TextAlign.left,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Flexible(
+                                                  fit: FlexFit.tight,
+                                                  flex: 1,
+                                                  child: Text(
+                                                    "Qty",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Flexible(
+                                                  fit: FlexFit.tight,
+                                                  flex: 2,
+                                                  child: Text(
+                                                    "Left Qty",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Flexible(
+                                                  fit: FlexFit.tight,
+                                                  flex: 1,
+                                                  child: Text(
+                                                    "Unit",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            ListView.builder(
+                                              primary: false,
+                                              padding: EdgeInsets.zero,
+                                              shrinkWrap: true,
+                                              itemCount: pradesh.events
+                                                  .singleWhere(
+                                                    (element) =>
+                                                        element.eventId ==
+                                                        selectedEventIndex,
+                                                  )
+                                                  .items
+                                                  .length,
+                                              itemBuilder: (context, itemIndex) {
+                                                FoodItem foodItem = pradesh
+                                                    .events
+                                                    .singleWhere(
+                                                      (element) =>
+                                                          element.eventId ==
+                                                          selectedEventIndex,
+                                                    )
+                                                    .items[itemIndex];
+                                                return Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        vertical: 4.0,
+                                                      ),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Flexible(
+                                                        fit: FlexFit.tight,
+                                                        flex: 1,
+                                                        child: Text(
+                                                          "${itemIndex + 1}",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Flexible(
+                                                        fit: FlexFit.tight,
+                                                        flex: 3,
+                                                        child: Text(
+                                                          "${foodItem.foodEngName}",
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Flexible(
+                                                        fit: FlexFit.tight,
+                                                        flex: 1,
+                                                        child: Text(
+                                                          "${foodItem.totalAssigned}",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Flexible(
+                                                        fit: FlexFit.tight,
+                                                        flex: 2,
+                                                        child: Text(
+                                                          "${foodItem.totalQty}",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Flexible(
+                                                        fit: FlexFit.tight,
+                                                        flex: 1,
+                                                        child: Text(
+                                                          "${foodItem.foodUnit}",
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Divider(),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0,
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    "નોધ:- તા. 23-09-2025. સુધી માં AVD મંદિર એ મોકલી આપવું.",
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.red,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                              ),
+                              child: _buildActionButtons(index),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            // PrasadamWidget(),
+            SizedBox(height: kBottomNavigationBarHeight),
+          ],
+        ),
       ),
     );
   }
@@ -500,17 +699,23 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
         height: 45,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: events.length,
+          itemCount: foodDistributionController.uniqueEvents.length,
           itemBuilder: (context, index) {
-            final isSelected = index == selectedEventIndex;
+            final isSelected = foodDistributionController.uniqueEvents[index].eventId == selectedEventIndex;
             return Padding(
               padding: EdgeInsets.only(
-                right: index < events.length - 1 ? 8 : 0,
+                right:
+                    index < foodDistributionController.uniqueEvents.length - 1
+                    ? 8
+                    : 0,
               ),
               child: GestureDetector(
                 onTap: () {
+             
                   setState(() {
-                    selectedEventIndex = index;
+                    selectedEventIndex =
+                        foodDistributionController.uniqueEvents[index].eventId;
+                    _filterPradeshs();
                   });
                 },
                 child: Container(
@@ -541,7 +746,7 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      events[index].name,
+                      foodDistributionController.uniqueEvents[index].eventName,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: isSelected
@@ -698,7 +903,7 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
       // Save to temporary file
       final tempDir = await getTemporaryDirectory();
       final file = await File(
-        '${tempDir.path}/card_${cardIndex}_${DateTime.now().millisecondsSinceEpoch}.png',
+        '${tempDir.path}/ankoot_${cardIndex}_${DateTime.now().millisecondsSinceEpoch}.png',
       ).create();
       await file.writeAsBytes(pngBytes);
 
@@ -708,8 +913,8 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
       // Share the image
       await Share.shareXFiles(
         [XFile(file.path)],
-        text: 'Check out ${currentUser.name}\'s card ${cardIndex + 1}',
-        subject: 'Contact Card ${cardIndex + 1} - ${currentUser.name}',
+        text: 'Ankkot',
+        subject: 'Ankkot',
       );
       setState(() {
         isShare = false;
@@ -733,7 +938,7 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
             const Text('Send Notification'),
           ],
         ),
-        content: Text('Send a notification to ${currentUser.name}?'),
+        content: Text('Send a notification to ?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -744,7 +949,7 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Notification sent to ${currentUser.name}'),
+                  content: Text('Notification sent to '),
                   backgroundColor: Colors.green,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
@@ -782,7 +987,7 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Recent activity for ${currentUser.name}:'),
+            Text('Recent activity for :'),
             SizedBox(height: 16),
             Text('• Shared card - 2 hours ago'),
             Text('• Updated inventory - 1 day ago'),
@@ -977,12 +1182,4 @@ class Contact {
   final String? email;
 
   const Contact({required this.name, required this.phone, this.email});
-}
-
-class Event {
-  final String id;
-  final String name;
-  final String date;
-
-  const Event({required this.id, required this.name, required this.date});
 }
