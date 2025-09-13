@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../api/server/general_service.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -14,7 +16,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController(text: "9099929109");
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
@@ -46,23 +48,30 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true;
       });
 
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 2));
+      // Call your login service
+      final success = await GeneralService.systemUserLogin(
+        context: context,
+        userMobile: _phoneController.text,
+      );
 
       setState(() {
         _isLoading = false;
       });
 
-      if(kIsWeb){
-        Navigator.pushReplacement(context, CupertinoPageRoute(builder: (context) => MainScreen()));
-      }else{
-        // Navigator.pushReplacement(context, CupertinoPageRoute(builder: (context) => MobileHomeScreen()));
-        Navigator.pushReplacement(context, CupertinoPageRoute(builder: (context) => MobileAdminHomeScreen()));
-
+      if (success) {
+        // Navigate based on platform
+        if (kIsWeb) {
+          Navigator.pushReplacement(
+            context,
+            CupertinoPageRoute(builder: (context) => MainScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            CupertinoPageRoute(builder: (context) => MobileAdminHomeScreen()),
+          );
+        }
       }
-
-      // Here you would typically navigate to the main screen
-
     }
   }
 

@@ -213,7 +213,6 @@ class User {
     return {
       'id': id,
       'name': name,
-
       'phone': phone,
       'role': role,
       'pradeshName': pradeshName,
