@@ -8,7 +8,6 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dio/dio.dart';
 
 import '../../helper/toast/toast_helper.dart';
-import '../../models/pradesh_items_data_model.dart' hide Data;
 import '../../models/user_data_model.dart';
 import '../api_client.dart';
 
@@ -110,41 +109,41 @@ class GeneralService {
   }
 
 
-  static Future<PradeshItemsDataModel?> fetchPradeshItems(int eventId) async {
-    try {
-      EasyLoading.show(status: "Fetching Pradesh Items...");
-
-      final Response response = await ApiClient.post(
-        ApiEndpoints.getPradeshItems,
-        data: {"event_id": eventId},
-      );
-
-      print("🔹 [Pradesh] Status: ${response.statusCode}");
-      print("🔹 [Pradesh] Response: ${response.data}");
-
-      if (response.statusCode != null &&
-          response.statusCode! >= 200 &&
-          response.statusCode! < 300) {
-        final dataModel = PradeshItemsDataModel.fromJson(response.data);
-
-        if (dataModel.errorStatus == true) {
-          EasyLoading.showError("Failed to fetch Pradesh items");
-          return null;
-        }
-        return dataModel;
-      } else {
-        EasyLoading.showError("API Error: ${response.statusMessage}");
-        return null;
-      }
-    } catch (e, stack) {
-      print("❌ [Pradesh] Error: $e");
-      print(stack);
-      EasyLoading.showError("Something went wrong: $e");
-      return null;
-    } finally {
-      EasyLoading.dismiss();
-    }
-  }
+  // static Future<PradeshItemsDataModel?> fetchPradeshItems(int eventId) async {
+  //   try {
+  //     EasyLoading.show(status: "Fetching Pradesh Items...");
+  //
+  //     final Response response = await ApiClient.post(
+  //       ApiEndpoints.getPradeshItems,
+  //       data: {"event_id": eventId},
+  //     );
+  //
+  //     print("🔹 [Pradesh] Status: ${response.statusCode}");
+  //     print("🔹 [Pradesh] Response: ${response.data}");
+  //
+  //     if (response.statusCode != null &&
+  //         response.statusCode! >= 200 &&
+  //         response.statusCode! < 300) {
+  //       final dataModel = PradeshItemsDataModel.fromJson(response.data);
+  //
+  //       if (dataModel.errorStatus == true) {
+  //         EasyLoading.showError("Failed to fetch Pradesh items");
+  //         return null;
+  //       }
+  //       return dataModel;
+  //     } else {
+  //       EasyLoading.showError("API Error: ${response.statusMessage}");
+  //       return null;
+  //     }
+  //   } catch (e, stack) {
+  //     print("❌ [Pradesh] Error: $e");
+  //     print(stack);
+  //     EasyLoading.showError("Something went wrong: $e");
+  //     return null;
+  //   } finally {
+  //     EasyLoading.dismiss();
+  //   }
+  // }
 
 
 

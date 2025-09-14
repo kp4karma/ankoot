@@ -245,7 +245,7 @@ class Event {
   }
 }
 
-class Pradesh {
+  class Pradesh {
   final int pradeshId;
   final String pradeshEngName;
   final String pradeshGujName;

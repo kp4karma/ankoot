@@ -2,14 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../controller/food_distribution_controller.dart';
 import '../controller/pradesh_item_controller.dart';
+import '../models/evet_items.dart';
 import '../theme/app_theme.dart';
 import '../widgets/search_bar.dart';
-import '../models/pradesh_items_data_model.dart';
 
 class Sidebar extends StatelessWidget {
-  final Function(PradeshData) onPradeshSelected;
-  final PradeshData? selectedPradesh;
+  final Function(Pradesh) onPradeshSelected;
+  final Pradesh? selectedPradesh;
 
   const Sidebar({
     super.key,
@@ -19,7 +20,7 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final PradeshController pradeshController = Get.put(PradeshController());
+    final FoodDistributionController pradeshController = Get.put(FoodDistributionController());
 
     return Container(
       width: 300,
@@ -46,23 +47,21 @@ class Sidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildPradeshList(PradeshController controller) {
+  Widget _buildPradeshList(FoodDistributionController controller) {
     return Expanded(
       child: Obx(() {
-        if (controller.isLoading.value) {
+        if (controller.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (controller.errorMessage.isNotEmpty) {
-          return Center(child: Text(controller.errorMessage.value));
-        }
-        if (controller.pradeshList.isEmpty) {
+
+        if (controller.uniquePradeshs.isEmpty) {
           return const Center(child: Text("No Pradesh found"));
         }
 
         return ListView.builder(
-          itemCount: controller.pradeshList.length,
+          itemCount: controller.uniquePradeshs.length,
           itemBuilder: (context, index) {
-            final pradesh = controller.pradeshList[index];
+            final pradesh = controller.uniquePradeshs[index];
             final isSelected = selectedPradesh?.pradeshId == pradesh.pradeshId;
 
             return Container(
@@ -103,7 +102,7 @@ class Sidebar extends StatelessWidget {
                   ),
                 ),
                 subtitle: Text(
-                  "Items: ${pradesh.items?.length ?? 0} | Users: ${pradesh.pradeshUsers?.length ?? 0}",
+                  " ${pradesh.pradeshGujName}",
                   style: TextStyle(
                     fontSize: 12,
                     color: isSelected ? AppTheme.primaryColors : Colors.grey,

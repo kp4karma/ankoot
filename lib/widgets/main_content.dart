@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:ankoot_new/theme/app_theme.dart';
 import 'package:ankoot_new/widgets/evetn_screen.dart';
 
-import '../models/pradesh_items_data_model.dart';
+import '../models/evet_items.dart';
 
 class MainContent extends StatelessWidget {
-  final PradeshData? selectedPradesh;
+  final Pradesh selectedPradesh;
   final Function() onNotifyPressed;
 
-  const MainContent({
+
+   MainContent({
     super.key,
-    this.selectedPradesh,
+    required this.selectedPradesh,
     required this.onNotifyPressed,
   });
 
@@ -81,7 +82,7 @@ class MainContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Items: ${selectedPradesh!.items?.length ?? 0} | Users: ${selectedPradesh!.pradeshUsers?.length ?? 0}",
+                  "${selectedPradesh!.pradeshGujName.toString()}",
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],

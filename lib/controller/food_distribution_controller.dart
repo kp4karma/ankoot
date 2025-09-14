@@ -1,5 +1,3 @@
-
-
 // Controller using GetX
 import 'package:ankoot_new/api/server/general_service.dart';
 import 'package:ankoot_new/models/evet_items.dart';
@@ -8,10 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class FoodDistributionController extends GetxController {
-
-
   // Observable variables
-  final Rx<FoodDistributionResponse?> _distributionData = Rx<FoodDistributionResponse?>(null);
+  final Rx<FoodDistributionResponse?> _distributionData =
+      Rx<FoodDistributionResponse?>(null);
   final RxBool _isLoading = true.obs;
   final RxString _error = ''.obs;
   final RxList<Event> _uniqueEvents = <Event>[].obs;
@@ -20,6 +17,18 @@ class FoodDistributionController extends GetxController {
   final RxList<FoodItem> _filteredItems = <FoodItem>[].obs;
   final RxString _selectedCategory = 'All'.obs;
 
+  RxList<Event> tempList = <Event>[].obs;
+  RxBool  isShowLeftQty = false.obs;
+  Rx<Pradesh> selectedPradesh = Rx<Pradesh>(
+    Pradesh(
+      pradeshId: 0,
+      pradeshEngName: 'All',
+      events: [],
+      pradeshGujName: "",
+      pradeshUsers: [],
+      status: "",
+    ),
+  );
   // Getters
   FoodDistributionResponse? get distributionData => _distributionData.value;
   bool get isLoading => _isLoading.value;
@@ -33,12 +42,16 @@ class FoodDistributionController extends GetxController {
   // Computed properties
   Map<String, dynamic> get summaryStats {
     if (_distributionData.value == null) return {};
-    return FoodDistributionHelper.getSummaryStatistics(_distributionData.value!);
+    return FoodDistributionHelper.getSummaryStatistics(
+      _distributionData.value!,
+    );
   }
 
   List<String> get categories {
     if (_distributionData.value == null) return ['All'];
-    final cats = FoodDistributionHelper.extractUniqueCategories(_distributionData.value!);
+    final cats = FoodDistributionHelper.extractUniqueCategories(
+      _distributionData.value!,
+    );
     return ['All', ...cats];
   }
 
@@ -48,7 +61,11 @@ class FoodDistributionController extends GetxController {
     loadData();
 
     // Listen to search query changes
-    debounce(_searchQuery, (_) => _performSearch(), time: Duration(milliseconds: 500));
+    debounce(
+      _searchQuery,
+      (_) => _performSearch(),
+      time: Duration(milliseconds: 500),
+    );
   }
 
   Future<void> loadData() async {
@@ -58,19 +75,20 @@ class FoodDistributionController extends GetxController {
 
       final response = await GeneralService.getFoodDistributionData();
 
-      if (response != null && response.errorStatus == false ) {
+      if (response != null && response.errorStatus == false) {
         _distributionData.value = response;
-        _uniqueEvents.value = FoodDistributionHelper.extractUniqueEvents(response);
-        _uniquePradeshs.value = FoodDistributionHelper.extractUniquePradeshs(response);
+        _uniqueEvents.value = FoodDistributionHelper.extractUniqueEvents(
+          response,
+        );
+        _uniquePradeshs.value = FoodDistributionHelper.extractUniquePradeshs(
+          response,
+        );
         _performSearch(); // Initialize filtered items
-
       } else {
         _error.value = response.msg ?? 'Failed to load data';
-
       }
     } catch (e) {
       _error.value = 'Network error: $e';
-
     } finally {
       _isLoading.value = false;
     }
@@ -88,18 +106,27 @@ class FoodDistributionController extends GetxController {
   void _performSearch() {
     if (_distributionData.value == null) return;
 
-    List<FoodItem> items = FoodDistributionHelper.extractAllUniqueFoodItems(_distributionData.value!);
+    List<FoodItem> items = FoodDistributionHelper.extractAllUniqueFoodItems(
+      _distributionData.value!,
+    );
 
     // Filter by category
     if (_selectedCategory.value != 'All') {
-      items = items.where((item) => item.foodCategory == _selectedCategory.value).toList();
+      items = items
+          .where((item) => item.foodCategory == _selectedCategory.value)
+          .toList();
     }
 
     // Filter by search query
     if (_searchQuery.value.isNotEmpty) {
-      items = FoodDistributionHelper.searchItems(_distributionData.value!, _searchQuery.value);
+      items = FoodDistributionHelper.searchItems(
+        _distributionData.value!,
+        _searchQuery.value,
+      );
       if (_selectedCategory.value != 'All') {
-        items = items.where((item) => item.foodCategory == _selectedCategory.value).toList();
+        items = items
+            .where((item) => item.foodCategory == _selectedCategory.value)
+            .toList();
       }
     }
 
@@ -124,28 +151,33 @@ class FoodDistributionController extends GetxController {
               Text('Items with Shortage: ${event.itemsWithShortage.length}'),
               SizedBox(height: 16),
               Text('Items:', style: TextStyle(fontWeight: FontWeight.bold)),
-              ...event.items.map((item) => Padding(
-                padding: EdgeInsets.symmetric(vertical: 2),
-                child: Row(
-                  children: [
-                    Expanded(child: Text(item.foodEngName)),
-                    Text(item.formattedAssigned),
-                    Icon(
-                      item.hasSufficientStock ? Icons.check : Icons.warning,
-                      color: item.hasSufficientStock ? Colors.green : Colors.orange,
-                      size: 16,
+              ...event.items
+                  .map(
+                    (item) => Padding(
+                      padding: EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        children: [
+                          Expanded(child: Text(item.foodEngName)),
+                          Text(item.formattedAssigned),
+                          Icon(
+                            item.hasSufficientStock
+                                ? Icons.check
+                                : Icons.warning,
+                            color: item.hasSufficientStock
+                                ? Colors.green
+                                : Colors.orange,
+                            size: 16,
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              )).toList(),
+                  )
+                  .toList(),
             ],
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Close'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: Text('Close')),
         ],
       ),
     );

@@ -2,47 +2,47 @@
 
 import 'package:get/get.dart';
 import '../api/server/general_service.dart';
-import '../models/pradesh_items_data_model.dart';
+import '../models/evet_items.dart';
 
 class PradeshController extends GetxController {
   var isLoading = false.obs;
-  var pradeshList = <PradeshData>[].obs;
+  var pradeshList = <Pradesh>[].obs;
   var errorMessage = ''.obs;
 
   // Add selected pradesh for default selection
-  var selectedPradesh = Rx<PradeshData?>(null);
+  var selectedPradesh = Rx<Pradesh?>(null);
 
   /// Fetch Pradesh items for a given event
-  Future<void> fetchPradeshItems(int eventId) async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-
-      final result = await GeneralService.fetchPradeshItems(eventId);
-
-      if (result != null && result.data != null) {
-        pradeshList.assignAll(result.data!.data ?? []);
-
-        // Automatically select first item if list is not empty and no item is selected
-        if (pradeshList.isNotEmpty && selectedPradesh.value == null) {
-          selectPradesh(pradeshList.first);
-        }
-      } else {
-        errorMessage.value = "No data received from server.";
-        pradeshList.clear();
-        selectedPradesh.value = null; // Clear selection when no data
-      }
-    } catch (e) {
-      errorMessage.value = "Error: $e";
-      pradeshList.clear();
-      selectedPradesh.value = null; // Clear selection on error
-    } finally {
-      isLoading.value = false;
-    }
-  }
+  // Future<void> fetchPradeshItems(int eventId) async {
+  //   try {
+  //     isLoading.value = true;
+  //     errorMessage.value = '';
+  //
+  //     final result = await GeneralService.getFoodDistributionData();
+  //
+  //     if (result != null && result. != null) {
+  //       pradeshList.assignAll(result.data!.data ?? []);
+  //
+  //       // Automatically select first item if list is not empty and no item is selected
+  //       if (pradeshList.isNotEmpty && selectedPradesh.value == null) {
+  //         selectPradesh(pradeshList.first);
+  //       }
+  //     } else {
+  //       errorMessage.value = "No data received from server.";
+  //       pradeshList.clear();
+  //       selectedPradesh.value = null; // Clear selection when no data
+  //     }
+  //   } catch (e) {
+  //     errorMessage.value = "Error: $e";
+  //     pradeshList.clear();
+  //     selectedPradesh.value = null; // Clear selection on error
+  //   } finally {
+  //     isLoading.value = false;
+  //   }
+  // }
 
   /// Select a pradesh
-  void selectPradesh(PradeshData pradesh) {
+  void selectPradesh(Pradesh pradesh) {
     selectedPradesh.value = pradesh;
   }
 
@@ -52,10 +52,10 @@ class PradeshController extends GetxController {
   }
 
   /// Get currently selected pradesh
-  PradeshData? get currentSelectedPradesh => selectedPradesh.value;
+  Pradesh? get currentSelectedPradesh => selectedPradesh.value;
 
   /// Check if a pradesh is selected
-  bool isPradeshSelected(PradeshData pradesh) {
+  bool isPradeshSelected(Pradesh pradesh) {
     return selectedPradesh.value?.pradeshId == pradesh.pradeshId;
   }
 

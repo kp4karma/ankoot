@@ -1,81 +1,31 @@
+import 'package:ankoot_new/models/evet_items.dart';
 import 'package:ankoot_new/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:pluto_grid/pluto_grid.dart';
+import 'package:get/get.dart';
+
+import '../controller/food_distribution_controller.dart';
 
 // Main Screen Widget
 class EventScreen extends StatefulWidget {
+  EventScreen({Key? key}) : super(key: key);
   @override
   _EventScreenState createState() => _EventScreenState();
 }
 
 class _EventScreenState extends State<EventScreen> {
-  int selectedEventIndex = 0;
-  List<EventItem> eventItems = [
-    EventItem(id: 1, name: 'Meeting', date: '2024-01-15', status: 'Active'),
-    EventItem(id: 2, name: 'Conference', date: '2024-01-20', status: 'Pending'),
-    EventItem(id: 3, name: 'Workshop', date: '2024-01-25', status: 'Completed'),
-    EventItem(id: 4, name: 'Training', date: '2024-02-01', status: 'Active'),
-  ];
+  int selectedEventIndex = 1;
 
-  List<ItemModel> items = [
-    ItemModel(
-      id: 1,
-      nameEnglish: "Rice",
-      nameGujarati: "ચોખા",
-      unit: "Kg",
-      qty: 2.5,
-    ),
-    ItemModel(
-      id: 2,
-      nameEnglish: "Wheat Flour",
-      nameGujarati: "ઘઉંનો લોટ",
-      unit: "Kg",
-    ),
-    ItemModel(
-      id: 3,
-      nameEnglish: "Sugar",
-      nameGujarati: "ખાંડ",
-      unit: "Kg",
-      qty: 1.0,
-    ),
-    ItemModel(
-      id: 4,
-      nameEnglish: "Cooking Oil",
-      nameGujarati: "રસોઈ તેલ",
-      unit: "Ltr",
-    ),
-    ItemModel(
-      id: 5,
-      nameEnglish: "Salt",
-      nameGujarati: "મીઠું",
-      unit: "Kg",
-      qty: 0.5,
-    ),
-  ];
+  final foodDistributionController = Get.put(FoodDistributionController());
 
-  void _onSaveQty(int index, double qty) {
-    setState(() {
-      items[index].qty = qty;
-    });
-    // You can also call an API or save to database here
-    print('Saved qty ${qty} for item: ${items[index].nameEnglish}');
-  }
-
-
-  final List<String> events = ['Diwali Ankoot - 2025', 'Ankoot - 2024'];
+  void _onSaveQty(int index, double qty) {}
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Event Selection Card
-
-
-        // Data Table Section
         Expanded(
           child: Container(
-            // margin: EdgeInsets.all(16),
-            // padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
@@ -90,21 +40,35 @@ class _EventScreenState extends State<EventScreen> {
             child: Column(
               children: [
                 EventSelectionCard(
-                  events: events,
+                  events: foodDistributionController.uniqueEvents,
                   selectedIndex: selectedEventIndex,
                   onEventSelected: (index) {
                     setState(() {
                       selectedEventIndex = index;
                     });
                   },
-                  onAddNew: () {
-                    _showAddEventDialog();
-                  },
+                  onAddNew: () {},
                 ),
-                Expanded(
-                  child: ItemPlutoGrid(
-                    items: items,
-                    onSaveQty: _onSaveQty,
+                Obx(
+                  () => Expanded(
+                    child: ItemPlutoGrid(
+                      key: UniqueKey(),
+                      items: foodDistributionController.uniquePradeshs
+                          .singleWhere(
+                            (element) =>
+                                element.pradeshId ==
+                                foodDistributionController
+                                    .selectedPradesh
+                                    .value
+                                    .pradeshId,
+                          )
+                          .events
+                          .singleWhere(
+                            (element) => element.eventId == selectedEventIndex,
+                          )
+                          .items,
+                      onSaveQty: _onSaveQty,
+                    ),
                   ),
                 ),
               ],
@@ -114,91 +78,10 @@ class _EventScreenState extends State<EventScreen> {
       ],
     );
   }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return Colors.green;
-      case 'inactive':
-        return Colors.red;
-      case 'pending':
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  Widget _buildStatusChip(String status) {
-    Color chipColor;
-    switch (status) {
-      case 'Active':
-        chipColor = Colors.green;
-        break;
-      case 'Pending':
-        chipColor = Colors.orange;
-        break;
-      case 'Completed':
-        chipColor = Colors.blue;
-        break;
-      default:
-        chipColor = Colors.grey;
-    }
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: chipColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: chipColor.withOpacity(0.3)),
-      ),
-      child: Text(
-        status,
-        style: TextStyle(
-          color: chipColor,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  void _showAddEventDialog() {
-    // showDialog(
-    //   context: context,
-    //   builder: (context) => AddEventDialog(
-    //     onEventAdded: (name, date) {
-    //       setState(() {
-    //         eventItems.add(EventItem(
-    //           id: eventItems.length + 1,
-    //           name: name,
-    //           date: date,
-    //           status: 'Pending',
-    //         ));
-    //       });
-    //     },
-    //   ),
-    // );
-  }
-
-  void _editEvent(EventItem item) {
-    // Handle edit event
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Edit ${item.name}')),
-    );
-  }
-
-  void _deleteEvent(int id) {
-    setState(() {
-      eventItems.removeWhere((item) => item.id == id);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Event deleted')),
-    );
-  }
 }
 
 class EventSelectionCard extends StatelessWidget {
-  final List<String> events;
+  final List<Event> events;
   final int selectedIndex;
   final Function(int) onEventSelected;
   final VoidCallback onAddNew;
@@ -217,7 +100,10 @@ class EventSelectionCard extends StatelessWidget {
       height: 35,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.only(topRight: Radius.circular(8),topLeft: Radius.circular(8)),
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(8),
+          topLeft: Radius.circular(8),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -235,7 +121,7 @@ class EventSelectionCard extends StatelessWidget {
               itemBuilder: (context, index) {
                 bool isSelected = index == selectedIndex;
                 return InkWell(
-                  onTap: () => onEventSelected(index),
+                  onTap: () => onEventSelected(events[index].eventId),
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     constraints: BoxConstraints(
@@ -246,7 +132,9 @@ class EventSelectionCard extends StatelessWidget {
                       color: isSelected
                           ? AppTheme.primaryColors
                           : Colors.transparent,
-                      borderRadius: index == 0 ? BorderRadius.only(topLeft: Radius.circular(8),):BorderRadius.circular(8),
+                      borderRadius: index == 0
+                          ? BorderRadius.only(topLeft: Radius.circular(8))
+                          : BorderRadius.circular(8),
                       border: Border.all(
                         color: isSelected
                             ? AppTheme.primaryColors
@@ -256,11 +144,9 @@ class EventSelectionCard extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        events[index],
+                        events[index].eventName,
                         style: TextStyle(
-                          color: isSelected
-                              ? Colors.white
-                              : Colors.grey[700],
+                          color: isSelected ? Colors.white : Colors.grey[700],
                           fontWeight: isSelected
                               ? FontWeight.w600
                               : FontWeight.w500,
@@ -287,7 +173,7 @@ class EventSelectionCard extends StatelessWidget {
                 elevation: 2,
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(topRight: Radius.circular(8),),
+                  borderRadius: BorderRadius.only(topRight: Radius.circular(8)),
                 ),
                 fixedSize: Size.fromHeight(36), // Fixed height for consistency
               ),
@@ -299,26 +185,12 @@ class EventSelectionCard extends StatelessWidget {
   }
 }
 
-// Event Item Model
-class EventItem {
-  final int id;
-  final String name;
-  final String date;
-  final String status;
-
-  EventItem({
-    required this.id,
-    required this.name,
-    required this.date,
-    required this.status,
-  });
-}
-
 // Add Event Dialog
 class AddEventDialog extends StatefulWidget {
   final Function(String, String) onEventAdded;
 
-  const AddEventDialog({Key? key, required this.onEventAdded}) : super(key: key);
+  const AddEventDialog({Key? key, required this.onEventAdded})
+    : super(key: key);
 
   @override
   _AddEventDialogState createState() => _AddEventDialogState();
@@ -360,7 +232,8 @@ class _AddEventDialogState extends State<AddEventDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            if (_nameController.text.isNotEmpty && _dateController.text.isNotEmpty) {
+            if (_nameController.text.isNotEmpty &&
+                _dateController.text.isNotEmpty) {
               widget.onEventAdded(_nameController.text, _dateController.text);
               Navigator.pop(context);
             }
@@ -379,32 +252,28 @@ class _AddEventDialogState extends State<AddEventDialog> {
   }
 }
 
-
-
 class ItemPlutoGrid extends StatefulWidget {
-final List<ItemModel> items;
-final Function(int index, double qty) onSaveQty;
+  final List<FoodItem> items;
+  final Function(int index, double qty) onSaveQty;
 
-const ItemPlutoGrid({
-Key? key,
-required this.items,
-required this.onSaveQty,
-}) : super(key: key);
+  const ItemPlutoGrid({Key? key, required this.items, required this.onSaveQty})
+    : super(key: key);
 
-@override
-_ItemPlutoGridState createState() => _ItemPlutoGridState();
+  @override
+  _ItemPlutoGridState createState() => _ItemPlutoGridState();
 }
 
 class _ItemPlutoGridState extends State<ItemPlutoGrid> {
   late PlutoGridStateManager stateManager;
   late List<PlutoColumn> columns;
-  late List<PlutoRow> rows;
 
+
+  FoodDistributionController foodDistributionController = Get.find<FoodDistributionController>();
   @override
   void initState() {
     super.initState();
     _initializeColumns();
-    _initializeRows();
+
   }
 
   void _initializeColumns() {
@@ -443,10 +312,7 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
       PlutoColumn(
         title: 'Qty',
         field: 'qty',
-        type: PlutoColumnType.number(
-          negative: false,
-          format: '#,###.##',
-        ),
+        type: PlutoColumnType.number(negative: false, format: '#,###.##'),
         enableEditingMode: true,
         width: 100,
         minWidth: 80,
@@ -454,6 +320,20 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
         textAlign: PlutoColumnTextAlign.center,
         backgroundColor: Colors.blue[50],
       ),
+      if(foodDistributionController.isShowLeftQty.value == true)
+      PlutoColumn(
+        title: 'Left Qty',
+        field: 'left_qty',
+        type: PlutoColumnType.number(negative: false, format: '#,###.##'),
+        enableEditingMode: true,
+        width: 100,
+        minWidth: 80,
+        titleTextAlign: PlutoColumnTextAlign.center,
+        textAlign: PlutoColumnTextAlign.center,
+        backgroundColor: Colors.blue[50],
+      ),
+
+
       PlutoColumn(
         title: 'Unit',
         field: 'unit',
@@ -487,11 +367,7 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(color: Colors.green[300]!),
                   ),
-                  child: Icon(
-                    Icons.save,
-                    size: 16,
-                    color: Colors.green[600],
-                  ),
+                  child: Icon(Icons.save, size: 16, color: Colors.green[600]),
                 ),
               ),
             ),
@@ -501,58 +377,41 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
     ];
   }
 
-  void _initializeRows() {
-    rows = widget.items.asMap().entries.map((entry) {
-      int index = entry.key;
-      ItemModel item = entry.value;
-
-      return PlutoRow(
-        cells: {
-          'sr': PlutoCell(value: index + 1),
-          'nameEnglish': PlutoCell(value: item.nameEnglish),
-          'nameGujarati': PlutoCell(value: item.nameGujarati),
-          'qty': PlutoCell(value: item.qty ?? 0.0),
-          'unit': PlutoCell(value: item.unit),
-          'action': PlutoCell(value: ''),
-        },
-      );
-    }).toList();
-  }
 
   void _saveQuantity(int rowIndex) {
-    if (rowIndex >= 0 && rowIndex < rows.length) {
-      final qtyCell = rows[rowIndex].cells['qty'];
-      final qty = qtyCell?.value ?? 0.0;
-
-      if (qty is num && qty > 0) {
-        widget.onSaveQty(rowIndex, qty.toDouble());
-
-        // Update the original item
-        if (rowIndex < widget.items.length) {
-          widget.items[rowIndex].qty = qty.toDouble();
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Quantity ${qty} saved for ${widget.items[rowIndex].nameEnglish}',
-            ),
-            duration: Duration(seconds: 2),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please enter a valid quantity greater than 0'),
-            duration: Duration(seconds: 2),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
+    // if (rowIndex >= 0 && rowIndex < rows.length) {
+    //   final qtyCell = rows[rowIndex].cells['qty'];
+    //   final qty = qtyCell?.value ?? 0.0;
+    //
+    //   if (qty is num && qty > 0) {
+    //     widget.onSaveQty(rowIndex, qty.toDouble());
+    //
+    //     // Update the original item
+    //     if (rowIndex < widget.items.length) {
+    //       // widget.items[rowIndex].totalAssigned = qty.toInt();
+    //     }
+    //
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(
+    //         content: Text(
+    //           'Quantity ${qty} saved for ${widget.items[rowIndex].foodEngName}',
+    //         ),
+    //         duration: Duration(seconds: 2),
+    //         backgroundColor: Colors.green,
+    //         behavior: SnackBarBehavior.floating,
+    //       ),
+    //     );
+    //   } else {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(
+    //         content: Text('Please enter a valid quantity greater than 0'),
+    //         duration: Duration(seconds: 2),
+    //         backgroundColor: Colors.red,
+    //         behavior: SnackBarBehavior.floating,
+    //       ),
+    //     );
+    //   }
+    // }
   }
 
   @override
@@ -571,12 +430,24 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
       ),
       child: PlutoGrid(
         columns: columns,
-        rows: rows,
+        rows:  widget.items.map((entry) {
+          return PlutoRow(
+            cells: {
+              'sr': PlutoCell(value: entry.foodItemId + 1),
+              'nameEnglish': PlutoCell(value: entry.foodEngName),
+              'nameGujarati': PlutoCell(value: entry.foodGujName),
+              'qty': PlutoCell(value: entry.totalAssigned ?? 0.0),
+              'unit': PlutoCell(value: entry.foodUnit),
+              if(foodDistributionController.isShowLeftQty.value == true)
+                'left_qty': PlutoCell(value: entry.totalQty),
+              'action': PlutoCell(value: ''),
+            },
+          );
+        }).toList(),
         onLoaded: (PlutoGridOnLoadedEvent event) {
           stateManager = event.stateManager;
           stateManager.setShowColumnFilter(true);
           stateManager.setSelectingMode(PlutoGridSelectingMode.cell);
-
         },
         onChanged: (PlutoGridOnChangedEvent event) {
           // Handle cell value changes
@@ -599,15 +470,15 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
-            cellTextStyle: TextStyle(
-              color: Colors.grey[700],
-              fontSize: 12,
-            ),
+            cellTextStyle: TextStyle(color: Colors.grey[700], fontSize: 12),
             columnHeight: 45,
 
             rowHeight: 50,
             defaultColumnTitlePadding: EdgeInsets.symmetric(horizontal: 8),
-            defaultCellPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            defaultCellPadding: EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 4,
+            ),
           ),
           columnSize: PlutoGridColumnSizeConfig(
             autoSizeMode: PlutoAutoSizeMode.scale,
@@ -625,200 +496,4 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
       ),
     );
   }
-}
-
-// Usage Widget
-class ItemPlutoGridPage extends StatefulWidget {
-  @override
-  _ItemPlutoGridPageState createState() => _ItemPlutoGridPageState();
-}
-
-class _ItemPlutoGridPageState extends State<ItemPlutoGridPage> {
-  List<ItemModel> items = [
-    ItemModel(
-      id: 1,
-      nameEnglish: "Rice",
-      nameGujarati: "ચોખા",
-      unit: "Kg",
-      qty: 2.5,
-    ),
-    ItemModel(
-      id: 2,
-      nameEnglish: "Wheat Flour",
-      nameGujarati: "ઘઉંનો લોટ",
-      unit: "Kg",
-    ),
-    ItemModel(
-      id: 3,
-      nameEnglish: "Sugar",
-      nameGujarati: "ખાંડ",
-      unit: "Kg",
-      qty: 1.0,
-    ),
-    ItemModel(
-      id: 4,
-      nameEnglish: "Cooking Oil",
-      nameGujarati: "રસોઈ તેલ",
-      unit: "Ltr",
-    ),
-    ItemModel(
-      id: 5,
-      nameEnglish: "Salt",
-      nameGujarati: "મીઠું",
-      unit: "Kg",
-      qty: 0.5,
-    ),
-    ItemModel(
-      id: 6,
-      nameEnglish: "Turmeric Powder",
-      nameGujarati: "હળદર પાવડર",
-      unit: "Gm",
-    ),
-    ItemModel(
-      id: 7,
-      nameEnglish: "Red Chili Powder",
-      nameGujarati: "લાલ મરચું પાવડર",
-      unit: "Gm",
-      qty: 0.25,
-    ),
-  ];
-
-  void _onSaveQty(int index, double qty) {
-    setState(() {
-      if (index < items.length) {
-        items[index].qty = qty;
-      }
-    });
-    print('Saved qty ${qty} for item: ${items[index].nameEnglish}');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Item Quantity Manager - PlutoGrid'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        elevation: 2,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              elevation: 2,
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Colors.blue, size: 20),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Double-click on Qty column to edit quantities, then click Save icon',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            Expanded(
-              child: ItemPlutoGrid(
-                items: items,
-                onSaveQty: _onSaveQty,
-              ),
-            ),
-            SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // Save all items with quantities
-                    var itemsWithQty = items.where((item) => item.qty != null && item.qty! > 0).toList();
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('Items with Quantities'),
-                        content: Container(
-                          width: double.maxFinite,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: itemsWithQty.map((item) =>
-                                ListTile(
-                                  title: Text(item.nameEnglish),
-                                  subtitle: Text(item.nameGujarati),
-                                  trailing: Text('${item.qty} ${item.unit}'),
-                                )
-                            ).toList(),
-                          ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text('Close'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  icon: Icon(Icons.list_alt),
-                  label: Text('View All Quantities'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      for (var item in items) {
-                        item.qty = null;
-                      }
-                    });
-                    // Refresh the grid
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('All quantities cleared'),
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                  },
-                  icon: Icon(Icons.clear_all),
-                  label: Text('Clear All'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Data Model (same as before)
-class ItemModel {
-  final int id;
-  final String nameEnglish;
-  final String nameGujarati;
-  final String unit;
-  double? qty;
-
-  ItemModel({
-    required this.id,
-    required this.nameEnglish,
-    required this.nameGujarati,
-    required this.unit,
-    this.qty,
-  });
 }
