@@ -1,3 +1,4 @@
+import 'package:ankoot_new/api/services/fcm_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -32,7 +33,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  void _onNotifyPressed() {
+  void _onNotifyPressed() async{
+    final NotificationService notificationService = Get.find();
+    bool success = await notificationService.notifyPradesh(
+      pradeshId: "1",
+      title: "_titleController.text.trim()",
+      message:" _messageController.text.trim()",
+      pradeshName: "Karma",
+    );
     if (pradeshController.selectedPradesh.value == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

@@ -1,9 +1,12 @@
 // lib/screens/mobile/mobile_home_screen.dart
 
+import 'package:ankoot_new/api/services/fcm_service.dart';
 import 'package:ankoot_new/controller/food_distribution_controller.dart';
 import 'package:ankoot_new/models/evet_items.dart';
 import 'package:ankoot_new/widgets/prasadm.dart';
 import 'package:ankoot_new/widgets/search_bar.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -349,8 +352,7 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
                   itemCount: _filteredPradeshs.length,
                   itemBuilder: (context, index) {
                     _cardKeys.add(GlobalKey());
-                    Pradesh pradesh =
-                        _filteredPradeshs[index];
+                    Pradesh pradesh = _filteredPradeshs[index];
                     return Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8.0,
@@ -701,7 +703,9 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
           scrollDirection: Axis.horizontal,
           itemCount: foodDistributionController.uniqueEvents.length,
           itemBuilder: (context, index) {
-            final isSelected = foodDistributionController.uniqueEvents[index].eventId == selectedEventIndex;
+            final isSelected =
+                foodDistributionController.uniqueEvents[index].eventId ==
+                selectedEventIndex;
             return Padding(
               padding: EdgeInsets.only(
                 right:
@@ -711,7 +715,6 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
               ),
               child: GestureDetector(
                 onTap: () {
-             
                   setState(() {
                     selectedEventIndex =
                         foodDistributionController.uniqueEvents[index].eventId;
@@ -1011,6 +1014,34 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
         "Ankoot",
         style: TextStyle(letterSpacing: 1, color: Colors.white),
       ),
+      actions: [
+        IconButton(
+          onPressed: () async {
+            await FirebaseMessaging.instance.getAPNSToken().then(
+              (value) => print(value),
+            );
+
+            final NotificationService notificationService = Get.find();
+
+            await notificationService.initializeUserSubscriptions(
+              userId: "1",
+              userType: "1", // 'admin' or 'user'
+              pradeshIds: ["1"], // Pradesh they belong to
+              eventIds: ['1'], // Events they're involved in
+            );
+
+            bool success = await notificationService.notifyPradesh(
+              pradeshId: "1",
+              title: _titleController.text.trim(),
+              message: _messageController.text.trim(),
+              pradeshName: "Kafrma",
+            );
+
+
+          },
+          icon: Icon(Icons.notification_add),
+        ),
+      ],
       backgroundColor: Colors.deepOrange,
       elevation: 2,
     );

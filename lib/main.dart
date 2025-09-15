@@ -1,20 +1,45 @@
-// lib/main.dart
 import 'package:ankoot_new/api/api_client.dart';
-import 'package:ankoot_new/screens/main_screen.dart';
+import 'package:ankoot_new/api/firebase_options.dart';
+import 'package:ankoot_new/api/services/fcm_service.dart';
 import 'package:ankoot_new/screens/mobile/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'theme/app_theme.dart';
-
-void main() {
+import 'package:get/get.dart';
+Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
   ApiClient.init();
-  runApp(const DeliveryDashApp());
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
+  if(kIsWeb){
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.web);
+  }else {
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+  }// Initialize services
+  Get.put(FirebaseMessagingService());
+  Get.put(NotificationService());
+
+  runApp(const MyApp());
 }
 
-class DeliveryDashApp extends StatelessWidget {
-  const DeliveryDashApp({super.key});
+
+
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
+
 
   @override
   Widget build(BuildContext context) {

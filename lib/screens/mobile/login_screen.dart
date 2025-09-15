@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
         } else {
           Navigator.pushReplacement(
             context,
-            CupertinoPageRoute(builder: (context) => MobileAdminHomeScreen()),
+            CupertinoPageRoute(builder: (context) => MobileHomeScreen()),
           );
         }
       }
