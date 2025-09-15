@@ -40,7 +40,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final navItems = [
       'Assign Item',
       'Item Collection',
-      'Event Item',
+      'Pradesh wise Item',
+      'Item wise Pradesh',
       'Events',
     ];
 

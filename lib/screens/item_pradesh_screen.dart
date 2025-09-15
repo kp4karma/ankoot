@@ -6,16 +6,14 @@ import 'package:get/get.dart';
 import '../controller/food_distribution_controller.dart';
 import '../theme/app_theme.dart';
 
-class SweetItemsScreen extends StatefulWidget {
-  static const routeName = 'feature/sweet-items-pradesh';
-
-  const SweetItemsScreen({Key? key}) : super(key: key);
+class ItemsPradeshScreen extends StatefulWidget {
+  const ItemsPradeshScreen({Key? key}) : super(key: key);
 
   @override
-  _SweetItemsScreenState createState() => _SweetItemsScreenState();
+  _ItemPradeshScreenState createState() => _ItemPradeshScreenState();
 }
 
-class _SweetItemsScreenState extends State<SweetItemsScreen> {
+class _ItemPradeshScreenState extends State<ItemsPradeshScreen> {
   final List<PlutoColumn> columns = [];
   final List<PlutoRow> rows = [];
   PlutoGridStateManager? stateManager;
@@ -40,39 +38,64 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
   void _initializeColumns() {
     columns.addAll([
       PlutoColumn(
-        title: 'Pradesh',
-        field: 'pradesh',
+        title: 'Item Name',
+        field: 'itemName',
         type: PlutoColumnType.text(),
-        width: 120,
+        width: 200,
         enableRowDrag: false,
+        readOnly: true,
         enableRowChecked: false,
-        readOnly: true, // Make read-only
         renderer: (c) {
-          IconData icon = c.row.type.isGroup ? Icons.location_city : Icons.store;
-          Color iconColor = c.row.type.isGroup ? Colors.deepOrange : Colors.green;
+          if(c.cell.value.toString() == "") return SizedBox();
+          IconData icon = c.row.type.isGroup
+              ? Icons.restaurant_menu
+              : Icons.location_city;
+          Color iconColor = c.row.type.isGroup
+              ? Colors.deepOrange
+              : Colors.green;
 
-          return Row(
-            children: [
-              Icon(icon, size: 18, color: iconColor),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  c.cell.value.toString(),
-                  style: TextStyle(
-                    fontWeight: c.row.type.isGroup ? FontWeight.bold : FontWeight.normal,
+          return GestureDetector(
+            onTap: () {
+              if (c.row.type.isGroup) {
+                stateManager?.toggleExpandedRowGroup(rowGroup: c.row);
+              }
+            },
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: Row(
+                children: [
+                  Icon(icon, size: 18, color: iconColor),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      c.cell.value.toString(),
+                      style: TextStyle(
+                        fontWeight: c.row.type.isGroup
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           );
         },
       ),
       PlutoColumn(
-        title: 'Item Name',
-        field: 'itemName',
+        title: 'Pradesh',
+        field: 'pradesh',
         type: PlutoColumnType.text(),
         width: 150,
-        readOnly: true, // Make read-only
+        readOnly: true,
+        renderer: (c) => Container(
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(
+            c.cell.value.toString(),
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+          ),
+        ),
       ),
       PlutoColumn(
         title: 'Assigned Qty',
@@ -80,7 +103,15 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
         type: PlutoColumnType.number(format: '#,###'),
         width: 110,
         textAlign: PlutoColumnTextAlign.right,
-        readOnly: true, // Make read-only
+        readOnly: true,
+        renderer: (c) => Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(
+            c.cell.value.toString(),
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+          ),
+        ),
       ),
       PlutoColumn(
         title: 'Available Qty',
@@ -88,35 +119,15 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
         type: PlutoColumnType.number(format: '#,###'),
         width: 110,
         textAlign: PlutoColumnTextAlign.right,
-        readOnly: true, // Make read-only
-        renderer: (c) {
-          final available = c.cell.value as int? ?? 0;
-          final assigned = c.row.cells['assignedQty']?.value as int? ?? 0;
-          final percentage = assigned > 0 ? (available / assigned * 100) : 0;
-
-          Color textColor = Colors.black;
-          if (assigned > 0) {
-            if (percentage >= 100) {
-              textColor = Colors.green;
-            } else if (percentage >= 70) {
-              textColor = Colors.orange;
-            } else {
-              textColor = Colors.red;
-            }
-          }
-
-          return Container(
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              available.toString(),
-              style: TextStyle(
-                color: textColor,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          );
-        },
+        readOnly: true,
+        renderer: (c) => Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(
+            c.cell.value.toString(),
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+          ),
+        ),
       ),
       PlutoColumn(
         title: 'Shortage Qty',
@@ -124,70 +135,30 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
         type: PlutoColumnType.number(format: '#,###'),
         width: 110,
         textAlign: PlutoColumnTextAlign.right,
-        readOnly: true, // Make read-only
-        renderer: (c) {
-          final shortage = c.cell.value as int? ?? 0;
-          Color backgroundColor = Colors.transparent;
-          Color textColor = Colors.black;
-
-          if (shortage == 0) {
-            backgroundColor = Colors.green.withOpacity(0.1);
-            textColor = Colors.green;
-          } else if (shortage > 0) {
-            backgroundColor = Colors.red.withOpacity(0.1);
-            textColor = Colors.red;
-          }
-
-          return Container(
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              shortage.toString(),
-              style: TextStyle(
-                color: textColor,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          );
-        },
+        readOnly: true,
+        renderer: (c) => Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(
+            c.cell.value.toString(),
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+          ),
+        ),
       ),
       PlutoColumn(
         title: 'Unit',
         field: 'unit',
         type: PlutoColumnType.text(),
         width: 80,
-        readOnly: true, // Make read-only
-      ),
-      PlutoColumn(
-        title: 'Category',
-        field: 'category',
-        type: PlutoColumnType.text(),
-        width: 100,
-        readOnly: true, // Make read-only
-      ),
-      PlutoColumn(
-        title: 'Call',
-        field: 'call',
-        type: PlutoColumnType.text(),
-        width: 80,
-        enableSorting: false,
-        enableColumnDrag: false,
-        readOnly: true, // Make read-only
-        renderer: (c) {
-          if (c.row.type.isGroup) return const SizedBox();
-
-          return Center(
-            child: IconButton(
-              icon: const Icon(Icons.phone, color: Colors.deepOrange, size: 20),
-              onPressed: () => _handleCall(c.row),
-              tooltip: 'Call for ${c.row.cells['itemName']?.value}',
-            ),
-          );
-        },
+        readOnly: true,
+        renderer: (c) => Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(
+            c.cell.value.toString(),
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+          ),
+        ),
       ),
       PlutoColumn(
         title: 'Notify',
@@ -196,9 +167,9 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
         width: 80,
         enableSorting: false,
         enableColumnDrag: false,
-        readOnly: true, // Make read-only
+        readOnly: true,
         renderer: (c) {
-          if (c.row.type.isGroup) return const SizedBox();
+          if (!c.row.type.isGroup) return const SizedBox();
 
           final shortage = c.row.cells['shortageQty']?.value as int? ?? 0;
           Color iconColor = shortage > 0 ? AppTheme.primaryColors : Colors.grey;
@@ -207,7 +178,8 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
             child: IconButton(
               icon: Icon(Icons.notifications, color: iconColor, size: 20),
               onPressed: shortage > 0 ? () => _handleNotify(c.row) : null,
-              tooltip: 'Send notification for ${c.row.cells['itemName']?.value}',
+              tooltip:
+              'Send notification for ${c.row.cells['itemName']?.value}',
             ),
           );
         },
@@ -224,7 +196,9 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
       return;
     }
 
-    print('DEBUG: Loading data with ${distributionData.pradeshs.length} pradeshs');
+    print(
+      'DEBUG: Loading data with ${distributionData.pradeshs.length} pradeshs',
+    );
 
     // Get the selected event
     final uniqueEvents = foodDistributionController.uniqueEvents;
@@ -240,81 +214,102 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
         ? uniqueEvents[selectedEventIndex]
         : uniqueEvents.first;
 
-    print('DEBUG: Selected event: ${selectedEvent.eventName} (ID: ${selectedEvent.eventId})');
+    print(
+      'DEBUG: Selected event: ${selectedEvent.eventName} (ID: ${selectedEvent.eventId})',
+    );
 
     // Clear existing rows
     rows.clear();
 
-    // Group data by Pradesh for the selected event
-    final pradeshMap = <String, List<Map<String, dynamic>>>{};
+    // Group data by Item Name for the selected event
+    final itemMap = <String, Map<String, dynamic>>{};
 
-    // Iterate through all pradeshs to find items for the selected event
+    // Iterate through all pradeshs to collect items for the selected event
     for (var pradesh in distributionData.pradeshs) {
       if (!pradesh.isActive) continue; // Skip inactive pradeshs
-
-      final pradeshItems = <Map<String, dynamic>>[];
 
       // Find events in this pradesh that match the selected event
       for (var event in pradesh.events) {
         if (event.eventId == selectedEvent.eventId) {
-          print('DEBUG: Found matching event in ${pradesh.pradeshEngName} with ${event.items.length} items');
+          print(
+            'DEBUG: Found matching event in ${pradesh.pradeshEngName} with ${event.items.length} items',
+          );
 
-          // Add all items from this matching event
+          // Process all items from this matching event
           for (var item in event.items) {
+            final itemKey = item.foodGujName; // Use Gujarati name as key
             final shortage = item.totalAssigned > item.totalQty
                 ? item.totalAssigned - item.totalQty
                 : 0;
 
-            pradeshItems.add({
-              'itemId': item.foodItemId.toString(),
-              'itemName': item.foodGujName,
-              'foodEngName': item.foodEngName,
+            if (!itemMap.containsKey(itemKey)) {
+              itemMap[itemKey] = {
+                'itemId': item.foodItemId.toString(),
+                'itemName': item.foodGujName,
+                'foodEngName': item.foodEngName,
+                'unit': item.foodUnit,
+                'pradeshs': <Map<String, dynamic>>[],
+              };
+            }
+
+            // Add this pradesh's data to the item
+            itemMap[itemKey]!['pradeshs'].add({
+              'pradeshName': pradesh.pradeshEngName,
               'assignedQty': item.totalAssigned,
               'availableQty': item.totalQty,
               'shortageQty': shortage,
-              'unit': item.foodUnit,
-              'category': item.foodCategory,
-              'priority': shortage > 0 ? 'High' : 'Medium',
             });
           }
         }
       }
-
-      if (pradeshItems.isNotEmpty) {
-        pradeshMap[pradesh.pradeshEngName] = pradeshItems;
-        print('DEBUG: Added ${pradeshItems.length} items for pradesh: ${pradesh.pradeshEngName}');
-      }
     }
 
-    print('DEBUG: Created ${pradeshMap.length} pradesh groups');
+    print('DEBUG: Created ${itemMap.length} item groups');
 
     // Create PlutoRows from the grouped data
-    pradeshMap.forEach((pradeshName, items) {
-      // Create child rows first
-      final childRows = _createItemRows(items);
+    itemMap.forEach((itemName, itemData) {
+      final pradeshs = itemData['pradeshs'] as List<Map<String, dynamic>>;
 
-      // Create Pradesh group row with children
-      final pradeshRow = PlutoRow(
+      // Create child rows for pradeshs
+      final childRows = pradeshs.map<PlutoRow>((pradeshData) {
+        return PlutoRow(
+          cells: {
+            'itemName': PlutoCell(value: ''),
+            'pradesh': PlutoCell(value: pradeshData['pradeshName']),
+            'assignedQty': PlutoCell(value: pradeshData['assignedQty']),
+            'availableQty': PlutoCell(value: pradeshData['availableQty']),
+            'shortageQty': PlutoCell(value: pradeshData['shortageQty']),
+            'unit': PlutoCell(value: itemData['unit']),
+            'notify': PlutoCell(value: ''),
+          },
+        );
+      }).toList();
+
+      // ✅ Calculate totals for this Item group
+      final totalAssigned = pradeshs.fold<int>(
+          0, (sum, pradesh) => sum + (pradesh['assignedQty'] as int));
+      final totalAvailable = pradeshs.fold<int>(
+          0, (sum, pradesh) => sum + (pradesh['availableQty'] as int));
+      final totalShortage = pradeshs.fold<int>(
+          0, (sum, pradesh) => sum + (pradesh['shortageQty'] as int));
+
+      // Create Item group row with totals in header
+      final itemRow = PlutoRow(
         cells: {
-          'pradesh': PlutoCell(value: pradeshName),
-          'itemName': PlutoCell(value: ''),
-          'assignedQty': PlutoCell(value: 0),
-          'availableQty': PlutoCell(value: 0),
-          'shortageQty': PlutoCell(value: 0),
-          'unit': PlutoCell(value: ''),
-          'category': PlutoCell(value: ''),
-          'call': PlutoCell(value: ''),
+          'itemName': PlutoCell(value: itemName),
+          'pradesh': PlutoCell(value: 'TOTAL'),
+          'assignedQty': PlutoCell(value: totalAssigned),
+          'availableQty': PlutoCell(value: totalAvailable),
+          'shortageQty': PlutoCell(value: totalShortage),
+          'unit': PlutoCell(value: itemData['unit']),
           'notify': PlutoCell(value: ''),
         },
         type: PlutoRowType.group(
-          expanded: true,
           children: FilteredList<PlutoRow>(initialList: childRows),
         ),
       );
 
-      rows.add(pradeshRow);
-      // Add child rows to the main rows list
-      rows.addAll(childRows);
+      rows.add(itemRow);
     });
 
     print('DEBUG: Created ${rows.length} total rows');
@@ -333,75 +328,6 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
 
     stateManager!.removeAllRows();
     stateManager!.appendRows(rows);
-
-    // Set up row grouping
-    stateManager!.setRowGroup(
-      PlutoRowGroupTreeDelegate(
-        resolveColumnDepth: (column) => column.field == 'pradesh' ? 0 : 1,
-        showText: (cell) => cell.column.field == 'pradesh',
-        showFirstExpandableIcon: true,
-      ),
-    );
-
-    // Auto-expand all groups after a short delay
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (stateManager != null && mounted) {
-        for (var row in rows) {
-          if (row.type.isGroup) {
-            stateManager!.toggleExpandedRowGroup(rowGroup: row);
-          }
-        }
-      }
-    });
-  }
-
-  List<PlutoRow> _createItemRows(List<Map<String, dynamic>> items) {
-
-    return items.map<PlutoRow>((item) {
-      print(item.toString());
-      return PlutoRow(
-        cells: {
-          'pradesh': PlutoCell(value: '  ${item['itemName']}'), // Indent child items
-          'itemName': PlutoCell(value: item['foodEngName']),
-          'assignedQty': PlutoCell(value: item['assignedQty']),
-          'availableQty': PlutoCell(value: item['availableQty']),
-          'shortageQty': PlutoCell(value: item['shortageQty']),
-          'unit': PlutoCell(value: item['unit']),
-          'category': PlutoCell(value: item['category']),
-          'call': PlutoCell(value: ''),
-          'notify': PlutoCell(value: ''),
-        },
-        type: PlutoRowType.normal(),
-      );
-    }).toList();
-  }
-
-  void _handleCall(PlutoRow row) {
-    final itemName = row.cells['itemName']?.value ?? '';
-    final shortage = row.cells['shortageQty']?.value ?? 0;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Call Action'),
-        content: Text('Calling for item: $itemName\nShortage quantity: $shortage'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Calling for $itemName...')),
-              );
-            },
-            child: const Text('Call'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _handleNotify(PlutoRow row) {
@@ -412,7 +338,9 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Send Notification'),
-        content: Text('Send notification for item: $itemName\nShortage quantity: $shortage'),
+        content: Text(
+          'Send notification for item: $itemName\nShortage quantity: $shortage',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -498,7 +426,8 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
                               ),
                               const SizedBox(height: 16),
                               ElevatedButton(
-                                onPressed: () => foodDistributionController.refreshData(),
+                                onPressed: () =>
+                                    foodDistributionController.refreshData(),
                                 child: const Text('Retry'),
                               ),
                             ],
@@ -555,20 +484,16 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
                       return PlutoGrid(
                         columns: columns,
                         rows: rows,
-
-                        configuration: const PlutoGridConfiguration(
-
+                        configuration: PlutoGridConfiguration(
                           style: PlutoGridStyleConfig(
-
-
-                            cellColorGroupedRow: Colors.deepOrange,
+                            cellColorGroupedRow: Colors.deepOrange.withAlpha(10),
+                            enableRowColorAnimation: true,
                             gridBorderColor: Colors.deepOrange,
                             activatedBorderColor: Colors.deepOrange,
-                            rowHeight: 45,
+                            rowHeight: 30,
                             columnHeight: 50,
                           ),
                           columnSize: PlutoGridColumnSizeConfig(
-
                             autoSizeMode: PlutoAutoSizeMode.scale,
                             resizeMode: PlutoResizeMode.normal,
                           ),
@@ -576,11 +501,16 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
                         onLoaded: (PlutoGridOnLoadedEvent event) {
                           stateManager = event.stateManager;
 
-                          stateManager?.setShowColumnFilter(true);
-                          // Set up grouping when grid loads
-                          if (rows.isNotEmpty) {
-                            // _refreshGrid();
-                          }
+                          // Set up row grouping using TreeDelegate - now itemName is parent
+                          stateManager?.setRowGroup(
+                            PlutoRowGroupTreeDelegate(
+                              resolveColumnDepth: (column) =>
+                              column.field == 'itemName' ? 0 : 1,
+                              showText: (cell) =>
+                              cell.column.field == 'itemName',
+                              showFirstExpandableIcon: true,
+                            ),
+                          );
                         },
                         onChanged: (PlutoGridOnChangedEvent event) {
                           print('Data changed: ${event.value}');
