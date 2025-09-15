@@ -51,24 +51,33 @@ class Sidebar extends StatelessWidget {
     return Expanded(
       child: Obx(() {
         if (controller.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
 
-        if (controller.uniquePradeshs.isEmpty) {
-          return const Center(child: Text("No Pradesh found"));
+        // Safe way to find a single element
+        final pradesh = controller.uniquePradeshs.firstWhereOrNull(
+              (p) => p.pradeshId == controller.selectedPradesh.value.pradeshId,
+        );
+
+        // If pradesh not found, show loading indicator
+        if (pradesh == null) {
+          return Center(child: CircularProgressIndicator());
         }
 
         return ListView.builder(
           itemCount: controller.uniquePradeshs.length,
           itemBuilder: (context, index) {
             final pradesh = controller.uniquePradeshs[index];
-            final isSelected = selectedPradesh?.pradeshId == pradesh.pradeshId;
+            final isSelected =
+                controller.selectedPradesh.value.pradeshId == pradesh.pradeshId;
 
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: isSelected ? AppTheme.primaryColors.withOpacity(0.1) : Colors.transparent,
+                color: isSelected
+                    ? AppTheme.primaryColors.withOpacity(0.1)
+                    : Colors.transparent,
                 border: isSelected
                     ? Border.all(color: AppTheme.primaryColors.withOpacity(0.1), width: 1)
                     : null,
@@ -90,7 +99,7 @@ class Sidebar extends StatelessWidget {
                   ),
                   child: Icon(
                     Icons.location_city,
-                    color: isSelected ? AppTheme.primaryColors: Colors.grey.shade600,
+                    color: isSelected ? AppTheme.primaryColors : Colors.grey.shade600,
                     size: 20,
                   ),
                 ),
@@ -98,7 +107,7 @@ class Sidebar extends StatelessWidget {
                   pradesh.pradeshEngName ?? '',
                   style: TextStyle(
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                    color: isSelected ?AppTheme.primaryColors : Colors.black87,
+                    color: isSelected ? AppTheme.primaryColors : Colors.black87,
                   ),
                 ),
                 subtitle: Text(
@@ -108,8 +117,10 @@ class Sidebar extends StatelessWidget {
                     color: isSelected ? AppTheme.primaryColors : Colors.grey,
                   ),
                 ),
-           
-                onTap: () => onPradeshSelected(pradesh),
+                onTap: () {
+                  controller.selectedPradesh.value = pradesh; // update selection
+                  onPradeshSelected(pradesh); // callback
+                },
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 4,

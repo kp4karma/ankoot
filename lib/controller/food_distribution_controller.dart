@@ -1,5 +1,3 @@
-
-
 // Controller using GetX
 import 'package:ankoot_new/api/server/general_service.dart';
 import 'package:ankoot_new/models/evet_items.dart';
@@ -62,6 +60,12 @@ class FoodDistributionController extends GetxController {
         _distributionData.value = response;
         _uniqueEvents.value = FoodDistributionHelper.extractUniqueEvents(response);
         _uniquePradeshs.value = FoodDistributionHelper.extractUniquePradeshs(response);
+
+        // Auto-select the first pradesh if available
+        if (_uniquePradeshs.isNotEmpty) {
+          selectedPradesh.value = _uniquePradeshs.first;
+        }
+
         _performSearch(); // Initialize filtered items
 
       } else {

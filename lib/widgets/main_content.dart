@@ -8,8 +8,7 @@ class MainContent extends StatelessWidget {
   final Pradesh selectedPradesh;
   final Function() onNotifyPressed;
 
-
-   MainContent({
+  MainContent({
     super.key,
     required this.selectedPradesh,
     required this.onNotifyPressed,
@@ -17,19 +16,30 @@ class MainContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (selectedPradesh == null) {
-      return Center(
-        child: Text(
-          'Select a Pradesh to view its items',
-          style: TextStyle(fontSize: 18, color: Colors.grey),
+    if (selectedPradesh == null || selectedPradesh!.pradeshId == 0) {
+      return Container(
+        color: const Color(0xFFF5F5F5),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                color: AppTheme.primaryColors,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Loading Pradesh data...',
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              ),
+            ],
+          ),
         ),
       );
     }
 
-    return Container(
-      padding: EdgeInsets.zero,
-      color: const Color(0xFFF5F5F5),
-      child: Column(
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -37,13 +47,26 @@ class MainContent extends StatelessWidget {
           ),
           Expanded(
             child: Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
               child: EventScreen(), // Placeholder
             ),
           ),
         ],
       ),
+
+      // ✅ Floating button in bottom right corner
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // TODO: Add your assign logic here
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Assign to Pradesh clicked')),
+          );
+        },
+        backgroundColor: AppTheme.primaryColors,
+        icon: const Icon(Icons.reduce_capacity,color: Colors.white,),
+        label: const Text('Send to Pradesh',style: TextStyle(color: Colors.white),),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -55,8 +78,9 @@ class MainContent extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon instead of UserAvatar
+          // Icon
           Container(
             width: 60,
             height: 60,
@@ -72,26 +96,36 @@ class MainContent extends StatelessWidget {
           ),
           const SizedBox(width: 16),
 
+          // Pradesh Gujarati Name + Users
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  selectedPradesh!.pradeshEngName ?? 'Unknown Pradesh',
+                  selectedPradesh!.pradeshGujName, // ✅ Gujarati only
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  "${selectedPradesh!.pradeshGujName.toString()}",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                const SizedBox(height: 8),
+
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: selectedPradesh!.pradeshUsers.map((user) {
+                    return Chip(
+                      avatar: const Icon(Icons.person, size: 18),
+                      label: Text(
+                        "${user.userName} - ${user.userMobile}",
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      backgroundColor: Colors.grey[100],
+                    );
+                  }).toList(),
                 ),
               ],
             ),
           ),
 
+          // Notify button
           ElevatedButton.icon(
             onPressed: onNotifyPressed,
             icon: const Icon(Icons.notifications, size: 16),
