@@ -1,3 +1,4 @@
+import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:ankoot_new/theme/app_theme.dart';
 import 'package:ankoot_new/widgets/evetn_screen.dart';
@@ -13,6 +14,49 @@ class MainContent extends StatelessWidget {
     required this.selectedPradesh,
     required this.onNotifyPressed,
   });
+
+  Future<bool?> _showSendToPradeshDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // Prevent closing by tapping outside
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Row(
+            children: const [
+              Icon(Icons.send, color: Colors.deepOrange),
+              SizedBox(width: 8),
+              Text("Confirm Action"),
+            ],
+          ),
+          content: const Text(
+            "Are you sure you want to send to pradesh?",
+            style: TextStyle(fontSize: 15),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false), // return false
+              child: const Text("No"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepOrange,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(context, true); // return true
+                // 🔑 Don't put SnackBar here, handle it outside
+              },
+              child: const Text("Yes"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -56,16 +100,30 @@ class MainContent extends StatelessWidget {
 
       // ✅ Floating button in bottom right corner
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // TODO: Add your assign logic here
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Assign to Pradesh clicked')),
-          );
+        onPressed: () async {
+          final confirmed = await _showSendToPradeshDialog(context);
+          if (confirmed == true) {
+            // Execute your API call or controller action
+            print("✅ Proceed with sending to pradesh");
+            print("${UserStorageHelper.getUserData()!.data!.pradeshAssignment!.pradeshId}");
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Sent to pradesh successfully!"),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else {
+            print("❌ Cancelled by user");
+          }
         },
         backgroundColor: AppTheme.primaryColors,
-        icon: const Icon(Icons.reduce_capacity,color: Colors.white,),
-        label: const Text('Send to Pradesh',style: TextStyle(color: Colors.white),),
+        icon: const Icon(Icons.reduce_capacity, color: Colors.white),
+        label: const Text(
+          'Send to Pradesh',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }

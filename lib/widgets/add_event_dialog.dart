@@ -135,6 +135,30 @@ class _AddEventDialogState extends State<AddEventDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 8),
+                  // Event Name Field
+                  TextFormField(
+                    controller: _eventNameController,
+                    focusNode: _eventNameFocusNode,
+                    validator: (value) => _validateText(value, 'Event name'),
+                    decoration: InputDecoration(
+                      labelText: 'Event Name *',
+                      hintText: 'Enter event name',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.blue, width: 2),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(_eventDateFocusNode);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
 
                   // Event Date Field
                   TextFormField(

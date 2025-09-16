@@ -37,6 +37,7 @@ class _EventScreenState extends State<EventScreen> {
 
   void _onSaveQty(int index, double qty) {}
 
+
   void _onSearch(String query) {
     print('Search query received in parent: $query'); // Debug log
     setState(() {
