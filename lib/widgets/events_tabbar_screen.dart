@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -5,9 +8,13 @@ import 'package:responsive_framework/responsive_framework.dart';
 import '../controller/event_controller.dart';
 import '../models/event_data_model.dart'; // <-- use Data model
 import '../theme/app_theme.dart';
+import 'package:intl/intl.dart';
+
+import 'add_event_dialog.dart';
 
 class EventsScreen extends StatelessWidget {
   final EventController eventController = Get.put(EventController());
+
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +57,48 @@ class EventsScreen extends StatelessWidget {
       ),
     );
   }
+
+  void _showEventDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AddEventDialog(
+        onEventAdded: ({
+          required String eventName,
+          required String eventDate,
+          required String maxPrasadDate,
+          required String itemLastDate,
+        }) async {
+          // Call EventController function here
+          await eventController.createNewEvent(
+            eventName: eventName, // 👉 Replace with dynamic input if needed
+            personName: UserStorageHelper.getUserData()!.data!.user!.userName ?? "", // 👉 Replace with logged-in user or form field
+            mobile: "6352411412",     // 👉 Replace with logged-in user or form field
+            eventDate: eventDate,
+            maxPrasadDate: maxPrasadDate,
+            itemLastDate: itemLastDate,
+          );
+        },
+      ),
+    );
+  }
+
+
+
+  String formatDateTime(String? dbDate) {
+    if (dbDate == null || dbDate.trim().isEmpty) {
+      return "—"; // or return '' if you want it blank
+    }
+
+    try {
+      DateTime parsedUtc = DateTime.parse(dbDate); // throws FormatException if invalid
+      DateTime local = parsedUtc.toLocal();
+      return DateFormat('dd MMM yyyy, hh:mm a').format(local);
+    } catch (e) {
+      // fallback for invalid strings
+      return dbDate;
+    }
+  }
+
 
   Widget _buildEmptyState() {
     return Center(
@@ -152,14 +201,6 @@ class EventsScreen extends StatelessWidget {
                   ),
                 ),
                 const PopupMenuItem(
-                  value: 'clone',
-                  child: ListTile(
-                    leading: Icon(Icons.content_copy),
-                    title: Text('Clone'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-                const PopupMenuItem(
                   value: 'delete',
                   child: ListTile(
                     leading: Icon(Icons.delete, color: Colors.red),
@@ -177,6 +218,8 @@ class EventsScreen extends StatelessWidget {
   }
 
   Widget _buildDesktopGrid() {
+
+
     return ResponsiveGridView.builder(
       gridDelegate: const ResponsiveGridDelegate(
         crossAxisSpacing: 16,
@@ -187,6 +230,7 @@ class EventsScreen extends StatelessWidget {
       itemCount: eventController.events.length,
       itemBuilder: (context, index) {
         final Data event = eventController.events[index];
+        log("iwebdbciebc${event.eventDate}");
         return Card(
           color: Colors.white,
           elevation: 2,
@@ -237,14 +281,6 @@ class EventsScreen extends StatelessWidget {
                           ),
                         ),
                         const PopupMenuItem(
-                          value: 'clone',
-                          child: ListTile(
-                            leading: Icon(Icons.content_copy),
-                            title: Text('Clone Event'),
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
-                        const PopupMenuItem(
                           value: 'delete',
                           child: ListTile(
                             leading: Icon(Icons.delete, color: Colors.red),
@@ -261,58 +297,82 @@ class EventsScreen extends StatelessWidget {
                 Text(
                   event.eventName ?? '',
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF2D3748),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  event.eventDesc ?? '',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                    height: 1.4,
+                const SizedBox(height: 10),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Event Date : ",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold, // 🔥 Bold label
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextSpan(
+                        text: formatDateTime(event.eventDate ?? ''),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600], // normal text
+                        ),
+                      ),
+                    ],
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const Spacer(),
-                const Divider(),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      event.eventDate ?? '',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
+
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Max Prasad Date : ",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    const Spacer(),
-                    Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        event.eventLocation ?? '',
+                      TextSpan(
+                        text: formatDateTime(event.eventMaxPrasadDate ?? ''),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 16,
                           color: Colors.grey[600],
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
+
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Item Last Date : ",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextSpan(
+                        text: formatDateTime(event.eventItemLastDate ?? ''),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+
+
               ],
             ),
           ),
@@ -324,10 +384,7 @@ class EventsScreen extends StatelessWidget {
   void _handleMenuAction(String action, Data event) {
     switch (action) {
       case 'edit':
-        _showEventDialog(Get.context!, event: event);
-        break;
-      case 'clone':
-        eventController.cloneEvent(event);
+        _showEventDialog(Get.context!);
         break;
       case 'delete':
         _showDeleteDialog(event);
@@ -335,14 +392,6 @@ class EventsScreen extends StatelessWidget {
     }
   }
 
-  void _showEventDialog(BuildContext context, {Data? event}) {
-    // replace with your EventFormDialog later, now just placeholder
-    showDialog(
-      context: context,
-      builder: (context) =>
-          AlertDialog(content: Text("Event dialog for ${event?.eventName}")),
-    );
-  }
 
   void _showDeleteDialog(Data event) {
     Get.dialog(

@@ -60,5 +60,6 @@ class ApiEndpoints {
   static String get getData => "${ApiConfig.baseUrl}/getData/";
   static String get getPradeshItems => "${ApiConfig.baseUrl}/getPradeshItems/";
   static String get getDefaultPradeshItems => "${ApiConfig.baseUrl}/getDefaultPradeshItems/";
+  static String get createNewEvent => "${ApiConfig.baseUrl}/createNewEvent/";
 
 }

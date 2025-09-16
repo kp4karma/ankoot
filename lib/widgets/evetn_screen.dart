@@ -20,6 +20,20 @@ class _EventScreenState extends State<EventScreen> {
   String searchQuery = '';
 
   final foodDistributionController = Get.put(FoodDistributionController());
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final currentPradesh = foodDistributionController.selectedPradesh.value;
+    if (currentPradesh != null &&
+        foodDistributionController.uniqueEvents.isNotEmpty) {
+      setState(() {
+        selectedEventIndex =
+            foodDistributionController.uniqueEvents.first.eventId;
+      });
+    }
+  }
+
 
   void _onSaveQty(int index, double qty) {}
 
@@ -31,11 +45,17 @@ class _EventScreenState extends State<EventScreen> {
   }
 
   List<FoodItem> _getFilteredItems() {
-    print('Getting filtered items for event: $selectedEventIndex, search: "$searchQuery"'); // Debug log
+    print(
+      'Getting filtered items for event: $selectedEventIndex, search: "$searchQuery"',
+    ); // Debug log
 
     // Get the selected pradesh
     final selectedPradesh = foodDistributionController.uniquePradeshs
-        .where((element) => element.pradeshId == foodDistributionController.selectedPradesh.value.pradeshId)
+        .where(
+          (element) =>
+              element.pradeshId ==
+              foodDistributionController.selectedPradesh.value.pradeshId,
+        )
         .firstOrNull;
 
     if (selectedPradesh == null) {
@@ -67,7 +87,8 @@ class _EventScreenState extends State<EventScreen> {
       final gujName = item.foodGujName?.toLowerCase() ?? '';
       final unit = item.foodUnit?.toLowerCase() ?? '';
 
-      final matches = engName.contains(query) ||
+      final matches =
+          engName.contains(query) ||
           gujName.contains(query) ||
           unit.contains(query);
 
@@ -104,8 +125,6 @@ class _EventScreenState extends State<EventScreen> {
                   onEventSelected: (index) {
                     setState(() {
                       selectedEventIndex = index;
-                      // DON'T reset search query when switching events
-                      // searchQuery = ''; // ❌ Remove this line
                     });
                   },
                   onAddNew: () {
@@ -132,14 +151,18 @@ class _EventScreenState extends State<EventScreen> {
                   },
                 ),
                 Obx(
-                      () => Expanded(
-                    child: ItemPlutoGrid(
-                      key: ValueKey('grid-$selectedEventIndex-$searchQuery'), // Include searchQuery in key
-                      items: _getFilteredItems(),
-                      onSaveQty: _onSaveQty,
-                    ),
-                  ),
+                      () {
+                    final pradeshId = foodDistributionController.selectedPradesh.value.pradeshId;
+                    return Expanded(
+                      child: ItemPlutoGrid(
+                        key: ValueKey('grid-$pradeshId-$selectedEventIndex-$searchQuery'),
+                        items: _getFilteredItems(),
+                        onSaveQty: _onSaveQty,
+                      ),
+                    );
+                  },
                 ),
+
               ],
             ),
           ),
@@ -194,14 +217,14 @@ class _EventSelectionCardState extends State<EventSelectionCard> {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 250), () {
       print('Debounced search: $value'); // Debug log
-      widget.onSearch?.call(value);  // 🔑 Pass to parent
+      widget.onSearch?.call(value); // 🔑 Pass to parent
     });
   }
 
   void _clearSearch() {
     print('Clearing search'); // Debug log
     _searchController.clear();
-    widget.onSearch?.call('');  // 🔑 Reset search in parent
+    widget.onSearch?.call(''); // 🔑 Reset search in parent
   }
 
   @override
@@ -259,8 +282,8 @@ class _EventSelectionCardState extends State<EventSelectionCard> {
                                   : Colors.grey[100],
                               borderRadius: index == 0
                                   ? const BorderRadius.only(
-                                topLeft: Radius.circular(6),
-                              )
+                                      topLeft: Radius.circular(6),
+                                    )
                                   : BorderRadius.circular(6),
                               border: Border.all(
                                 color: isSelected
@@ -270,13 +293,13 @@ class _EventSelectionCardState extends State<EventSelectionCard> {
                               ),
                               boxShadow: isSelected
                                   ? [
-                                BoxShadow(
-                                  color: AppTheme.primaryColors
-                                      .withOpacity(0.3),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ]
+                                      BoxShadow(
+                                        color: AppTheme.primaryColors
+                                            .withOpacity(0.3),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
                                   : null,
                             ),
                             child: Center(
@@ -304,23 +327,26 @@ class _EventSelectionCardState extends State<EventSelectionCard> {
                 Container(
                   margin: const EdgeInsets.only(left: 16, right: 0),
                   child: ElevatedButton.icon(
-                    onPressed: (){
-                        showDialog(
-                          context: context,
-                          builder: (context) => AddItemDialog(
-                            onItemAdded: (newItem) {
-                              // TODO: Add logic to save in your list/controller
-                              print("New Item Added: ${newItem.foodEngName} - ${newItem.foodUnit}");
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Item ${newItem.foodEngName} added!"),
-                                  backgroundColor: Colors.green,
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AddItemDialog(
+                          onItemAdded: (newItem) {
+                            // TODO: Add logic to save in your list/controller
+                            print(
+                              "New Item Added: ${newItem.foodEngName} - ${newItem.foodUnit}",
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  "Item ${newItem.foodEngName} added!",
                                 ),
-                              );
-                            },
-                          ),
-                        );
-
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          },
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.add, size: 18),
                     label: const Text('Add New'),
@@ -339,7 +365,6 @@ class _EventSelectionCardState extends State<EventSelectionCard> {
                       ),
                       fixedSize: const Size.fromHeight(36),
                     ),
-
                   ),
                 ),
               ],
@@ -366,10 +391,7 @@ class _EventSelectionCardState extends State<EventSelectionCard> {
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: Colors.grey[300]!),
                       boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
-
-                        ),
+                        BoxShadow(color: Colors.black.withOpacity(0.02)),
                       ],
                     ),
                     child: TextField(
@@ -388,19 +410,19 @@ class _EventSelectionCardState extends State<EventSelectionCard> {
                         ),
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
-                          icon: const Icon(
-                            Icons.clear,
-                            color: Colors.grey,
-                            size: 16,
-                          ),
-                          onPressed: _clearSearch,
-                          splashRadius: 12,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 24,
-                            minHeight: 24,
-                          ),
-                        )
+                                icon: const Icon(
+                                  Icons.clear,
+                                  color: Colors.grey,
+                                  size: 16,
+                                ),
+                                onPressed: _clearSearch,
+                                splashRadius: 12,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 24,
+                                  minHeight: 24,
+                                ),
+                              )
                             : null,
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
@@ -450,7 +472,7 @@ class AddEventDialog extends StatefulWidget {
   final Function(String, String) onEventAdded;
 
   const AddEventDialog({Key? key, required this.onEventAdded})
-      : super(key: key);
+    : super(key: key);
 
   @override
   _AddEventDialogState createState() => _AddEventDialogState();
@@ -517,7 +539,7 @@ class ItemPlutoGrid extends StatefulWidget {
   final Function(int index, double qty) onSaveQty;
 
   const ItemPlutoGrid({Key? key, required this.items, required this.onSaveQty})
-      : super(key: key);
+    : super(key: key);
 
   @override
   _ItemPlutoGridState createState() => _ItemPlutoGridState();
@@ -528,7 +550,7 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
   late List<PlutoColumn> columns;
 
   FoodDistributionController foodDistributionController =
-  Get.find<FoodDistributionController>();
+      Get.find<FoodDistributionController>();
 
   @override
   void initState() {

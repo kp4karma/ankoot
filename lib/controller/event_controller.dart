@@ -1,15 +1,15 @@
 // lib/controllers/event_controller.dart
 
 import 'package:get/get.dart';
+import '../api/server/event_service.dart';
 import '../api/server/general_service.dart';
-import '../models/event_data_model.dart'; // <-- your Data model
+import '../models/event_data_model.dart';
 
 class EventController extends GetxController {
-  final events = <Data>[].obs;   // <-- real Data model
+  final events = <Data>[].obs;
   final isLoading = false.obs;
   RxBool isDefaultData = false.obs;
 
-  
   @override
   void onInit() {
     super.onInit();
@@ -27,15 +27,48 @@ class EventController extends GetxController {
     }
   }
 
-  /// Add new event locally (extend to API if needed)
-  void addEvent(Data event) {
-    events.add(event);
-    Get.back();
-    Get.snackbar(
-      'Success',
-      'Event added successfully',
-      backgroundColor: Get.theme.colorScheme.primary.withOpacity(0.1),
-    );
+  /// Create new event (API + local list update)
+  Future<bool> createNewEvent({
+    required String eventName,
+    required String personName,
+    required String mobile,
+    required String eventDate,
+    required String maxPrasadDate,
+    required String itemLastDate,
+  }) async {
+    try {
+      isLoading.value = true;
+      final success = await EventService.createNewEvent(
+        eventName: eventName,
+        personName: personName,
+        mobile: mobile,
+        eventDate: eventDate,
+        maxPrasadDate: maxPrasadDate,
+        itemLastDate: itemLastDate,
+      );
+
+      if (success) {
+        // Refresh event list after creating new one
+        await fetchEvents();
+
+        Get.back(); // close dialog
+        Get.snackbar(
+          'Success',
+          'Event created successfully',
+          backgroundColor: Get.theme.colorScheme.primary.withOpacity(0.1),
+        );
+      } else {
+        Get.snackbar(
+          'Error',
+          'Failed to create event',
+          backgroundColor: Get.theme.colorScheme.error.withOpacity(0.1),
+        );
+      }
+
+      return success;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   /// Update event locally
@@ -52,7 +85,7 @@ class EventController extends GetxController {
     }
   }
 
-  /// Delete event locally
+  /// Delete event locally (you can hook API delete here later)
   void deleteEvent(int? id) {
     events.removeWhere((event) => event.eventId == id);
     Get.snackbar(
