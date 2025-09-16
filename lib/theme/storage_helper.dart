@@ -8,10 +8,6 @@ class UserStorageKeys {
   static const String refreshToken = 'refreshToken';
 }
 
-
-
-
-
 class UserStorageHelper {
   static final GetStorage _box = GetStorage();
 
@@ -37,6 +33,18 @@ class UserStorageHelper {
     }
   }
 
+
+  static bool setUserData(UserDataModel userData) {
+    try {
+      String jsonString = jsonEncode(userData.toJson());
+      _box.write(UserStorageKeys.userData, jsonString);
+      print("✅ UserDataModel saved successfully");
+      return true;
+    } catch (e) {
+      print("❌ Error encoding UserDataModel: $e");
+      return false;
+    }
+  }
   static UserDataModel? getUserData() {
     String? jsonString = _box.read<String>(UserStorageKeys.userData);
     if (jsonString == null) return null;

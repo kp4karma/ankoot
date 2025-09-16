@@ -65,11 +65,21 @@ class _LoginScreenState extends State<LoginScreen> {
             context,
             CupertinoPageRoute(builder: (context) => MainScreen()),
           );
+
+
         } else {
-          Navigator.pushReplacement(
-            context,
-            CupertinoPageRoute(builder: (context) => MobileHomeScreen()),
-          );
+          if(false){
+            Navigator.pushReplacement(
+              context,
+              CupertinoPageRoute(builder: (context) => MobileAdminHomeScreen()),
+            );
+          }else{
+            Navigator.pushReplacement(
+              context,
+              CupertinoPageRoute(builder: (context) => MobileHomeScreen()),
+            );
+          }
+
         }
       }
     }

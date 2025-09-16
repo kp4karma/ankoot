@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:ankoot_new/api/api_endpoints.dart';
 import 'package:ankoot_new/models/event_data_model.dart';
 import 'package:ankoot_new/models/evet_items.dart';
+import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dio/dio.dart';
@@ -41,6 +42,7 @@ class GeneralService {
         final user = userDataModel.data?.user;
         final msg = userDataModel.data?.msg ?? "Login successful";
 
+        UserStorageHelper.setUserData(userDataModel);
         if (user == null) {
           EasyLoading.showError("Invalid user data");
           return false;
