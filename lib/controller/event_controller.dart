@@ -7,6 +7,7 @@ import '../models/event_data_model.dart'; // <-- your Data model
 class EventController extends GetxController {
   final events = <Data>[].obs;   // <-- real Data model
   final isLoading = false.obs;
+  RxBool isDefaultData = false.obs;
 
   
   @override

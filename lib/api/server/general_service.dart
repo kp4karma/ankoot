@@ -147,10 +147,12 @@ class GeneralService {
 
 
 
- static Future<FoodDistributionResponse> getFoodDistributionData() async {
+ static Future<FoodDistributionResponse> getFoodDistributionData({bool isDefault = false}) async {
     try {
+
+      print("getFoodDistributionDatagetFoodDistributionDatagetFoodDistributionData ${isDefault}");
       final Response response = await ApiClient.post(
-        ApiEndpoints.getPradeshItems,
+        isDefault ?ApiEndpoints.getDefaultPradeshItems :ApiEndpoints.getPradeshItems,
         data: {},
       );
       print(response);

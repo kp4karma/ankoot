@@ -1,4 +1,5 @@
 import 'package:ankoot_new/api/services/fcm_service.dart';
+import 'package:ankoot_new/controller/event_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -16,12 +17,15 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final FoodDistributionController pradeshController = Get.put(FoodDistributionController());
+  final FoodDistributionController pradeshController = Get.put(FoodDistributionController(),tag:'default',permanent: false);
 
+  EventController eventController = Get.find<EventController>();
 
   @override
   void initState() {
     pradeshController.isShowLeftQty.value = false;
+    eventController.isDefaultData.value = true;
+    pradeshController.loadData();
     super.initState();
   }
 

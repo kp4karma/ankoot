@@ -1,11 +1,14 @@
 // Controller using GetX
 import 'package:ankoot_new/api/server/general_service.dart';
+import 'package:ankoot_new/controller/event_controller.dart';
 import 'package:ankoot_new/models/evet_items.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class FoodDistributionController extends GetxController {
+
+  EventController eventController = Get.find<EventController>();
 
   final Rx<FoodDistributionResponse?> _distributionData = Rx<FoodDistributionResponse?>(null);
   Rx<Pradesh> selectedPradesh = Pradesh(events: [],pradeshEngName: "",pradeshGujName: "",pradeshId: 0,pradeshUsers: [],status: "").obs;
@@ -54,7 +57,7 @@ class FoodDistributionController extends GetxController {
       _isLoading.value = true;
       _error.value = '';
 
-      final response = await GeneralService.getFoodDistributionData();
+      final response = await GeneralService.getFoodDistributionData(isDefault: eventController.isDefaultData.value);
 
       if (response != null && response.errorStatus == false ) {
         _distributionData.value = response;

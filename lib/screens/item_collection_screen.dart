@@ -1,3 +1,4 @@
+import 'package:ankoot_new/controller/event_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -18,12 +19,15 @@ class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
   final FoodDistributionController pradeshController = Get.put(FoodDistributionController());
   Pradesh? _selectedPradesh;
 
+  EventController eventController = Get.find<EventController>();
+
   @override
   void initState() {
     super.initState();
     // load default with eventId = 1 (you can pass dynamically)
     // pradeshController.fetchPradeshItems(1);
-
+    eventController.isDefaultData.value = false;
+    pradeshController.loadData();
     pradeshController.isShowLeftQty.value = true;
   }
 
