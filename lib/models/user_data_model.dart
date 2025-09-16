@@ -22,14 +22,23 @@ class UserDataModel {
 class UserData {
   String? msg;
   User? user;
+  PradeshAssignment? pradeshAssignment;
   String? token;
   String? refreshToken;
 
-  UserData({this.msg, this.user, this.token, this.refreshToken});
+  UserData(
+      {this.msg,
+        this.user,
+        this.pradeshAssignment,
+        this.token,
+        this.refreshToken});
 
   UserData.fromJson(Map<String, dynamic> json) {
     msg = json['msg'];
     user = json['user'] != null ? new User.fromJson(json['user']) : null;
+    pradeshAssignment = json['pradesh_assignment'] != null
+        ? new PradeshAssignment.fromJson(json['pradesh_assignment'])
+        : null;
     token = json['token'];
     refreshToken = json['refreshToken'];
   }
@@ -39,6 +48,9 @@ class UserData {
     data['msg'] = this.msg;
     if (this.user != null) {
       data['user'] = this.user!.toJson();
+    }
+    if (this.pradeshAssignment != null) {
+      data['pradesh_assignment'] = this.pradeshAssignment!.toJson();
     }
     data['token'] = this.token;
     data['refreshToken'] = this.refreshToken;
@@ -83,6 +95,43 @@ class User {
     data['status'] = this.status;
     data['cdt'] = this.cdt;
     data['udt'] = this.udt;
+    return data;
+  }
+}
+
+class PradeshAssignment {
+  int? pradeshId;
+  String? pradeshEngName;
+  String? pradeshGujName;
+  String? pradeshOldEngName;
+  String? pradeshNewGujName;
+  String? status;
+
+  PradeshAssignment(
+      {this.pradeshId,
+        this.pradeshEngName,
+        this.pradeshGujName,
+        this.pradeshOldEngName,
+        this.pradeshNewGujName,
+        this.status});
+
+  PradeshAssignment.fromJson(Map<String, dynamic> json) {
+    pradeshId = json['pradesh_id'];
+    pradeshEngName = json['pradesh_eng_name'];
+    pradeshGujName = json['pradesh_guj_name'];
+    pradeshOldEngName = json['pradesh_old_eng_name'];
+    pradeshNewGujName = json['pradesh_new_guj_name'];
+    status = json['status'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['pradesh_id'] = this.pradeshId;
+    data['pradesh_eng_name'] = this.pradeshEngName;
+    data['pradesh_guj_name'] = this.pradeshGujName;
+    data['pradesh_old_eng_name'] = this.pradeshOldEngName;
+    data['pradesh_new_guj_name'] = this.pradeshNewGujName;
+    data['status'] = this.status;
     return data;
   }
 }

@@ -72,7 +72,7 @@ class EventsScreen extends StatelessWidget {
           await eventController.createNewEvent(
             eventName: eventName, // 👉 Replace with dynamic input if needed
             personName: UserStorageHelper.getUserData()!.data!.user!.userName ?? "", // 👉 Replace with logged-in user or form field
-            mobile: "6352411412",     // 👉 Replace with logged-in user or form field
+            mobile: UserStorageHelper.getUserData()!.data!.user!.userMobile ?? "",     // 👉 Replace with logged-in user or form field
             eventDate: eventDate,
             maxPrasadDate: maxPrasadDate,
             itemLastDate: itemLastDate,
