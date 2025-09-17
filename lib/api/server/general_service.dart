@@ -13,6 +13,61 @@ import '../../models/user_data_model.dart';
 import '../api_client.dart';
 
 class GeneralService {
+  /// Insert Data
+  static Future<bool> insertData(Map<String, dynamic> payload) async {
+    return _sendRequest(ApiEndpoints.insertData, payload, "Insert");
+  }
+
+  /// Update Data
+  static Future<bool> updateData(Map<String, dynamic> payload) async {
+    return _sendRequest(ApiEndpoints.updateData, payload, "Update");
+  }
+
+  /// Delete Data
+  static Future<bool> deleteData(Map<String, dynamic> payload) async {
+    return _sendRequest(ApiEndpoints.deleteData, payload, "Delete");
+  }
+
+  /// Common Request Handler
+  static Future<bool> _sendRequest(
+    String endpoint,
+    Map<String, dynamic> payload,
+    String action,
+  ) async {
+    try {
+      EasyLoading.show(status: "$action in progress...");
+
+      final Response response = await ApiClient.post(endpoint, data: payload);
+
+      print("🔹 [$action] Status: ${response.statusCode}");
+      print("🔹 [$action] Response: ${response.data}");
+
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        final resp = response.data;
+
+        if (resp["errorStatus"] == true) {
+          EasyLoading.showError("$action failed");
+          return false;
+        }
+
+        EasyLoading.showSuccess("$action successful");
+        return true;
+      } else {
+        EasyLoading.showError("API Error: ${response.statusMessage}");
+        return false;
+      }
+    } catch (e, stack) {
+      print("❌ [$action] Error: $e");
+      print(stack);
+      EasyLoading.showError("Something went wrong: $e");
+      return false;
+    } finally {
+      EasyLoading.dismiss();
+    }
+  }
+
   static Future<bool> systemUserLogin({
     required BuildContext context,
     required String userMobile,
@@ -110,7 +165,6 @@ class GeneralService {
     }
   }
 
-
   // static Future<PradeshItemsDataModel?> fetchPradeshItems(int eventId) async {
   //   try {
   //     EasyLoading.show(status: "Fetching Pradesh Items...");
@@ -147,18 +201,23 @@ class GeneralService {
   //   }
   // }
 
-
-
- static Future<FoodDistributionResponse> getFoodDistributionData({bool isDefault = false}) async {
+  static Future<FoodDistributionResponse> getFoodDistributionData({
+    bool isDefault = false,
+  }) async {
     try {
-
-      print("getFoodDistributionDatagetFoodDistributionDatagetFoodDistributionData ${isDefault}");
+      print(
+        "getFoodDistributionDatagetFoodDistributionDatagetFoodDistributionData ${isDefault}",
+      );
       final Response response = await ApiClient.post(
-        isDefault ?ApiEndpoints.getDefaultPradeshItems :ApiEndpoints.getPradeshItems,
+        isDefault
+            ? ApiEndpoints.getDefaultPradeshItems
+            : ApiEndpoints.getPradeshItems,
         data: {},
       );
       print(response);
-      final data = FoodDistributionResponse.fromJson(jsonDecode(response.toString()));
+      final data = FoodDistributionResponse.fromJson(
+        jsonDecode(response.toString()),
+      );
       return data;
     } catch (e) {
       throw Exception('Failed to load data: $e');

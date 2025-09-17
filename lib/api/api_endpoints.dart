@@ -63,5 +63,8 @@ class ApiEndpoints {
   static String get createNewEvent => "${ApiConfig.baseUrl}/createNewEvent/";
   static String get fetchHistory => "${ApiConfig.baseUrl}/getFoodStockByPerson/";
   static String get getPrasadStock => "${ApiConfig.baseUrl}/getPrasadStock/";
+  static String get insertData => "${ApiConfig.baseUrl}/insertData/";
+  static String get updateData => "${ApiConfig.baseUrl}/updateData/";
+  static String get deleteData => "${ApiConfig.baseUrl}/deleteData/";
 
 }
