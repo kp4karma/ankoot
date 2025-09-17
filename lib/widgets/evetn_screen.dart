@@ -635,11 +635,32 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
         titleTextAlign: PlutoColumnTextAlign.center,
         textAlign: PlutoColumnTextAlign.center,
         renderer: (rendererContext) {
+          final rowIndex = rendererContext.rowIdx;
+          final item = widget.items[rowIndex]; // 👈 get FoodItem from list
+
           return Container(
             padding: const EdgeInsets.all(4),
             child: Center(
               child: InkWell(
-                onTap: () => _saveQuantity(rendererContext.rowIdx),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => EditItemDialog(
+                      item: item,
+                      onItemUpdated: (updatedItem) {
+                        setState(() {
+                          widget.items[rowIndex] = updatedItem;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Item updated successfully'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
                 borderRadius: BorderRadius.circular(4),
                 child: Container(
                   padding: const EdgeInsets.all(6),
@@ -647,7 +668,39 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(color: Colors.deepOrange[300]!),
                   ),
-                  child: Icon(Icons.edit, size: 16, color: Colors.deepOrange),
+                  child: const Icon(Icons.edit, size: 16, color: Colors.deepOrange),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+
+      PlutoColumn(
+        title: 'Delete',
+        field: 'delete',
+        type: PlutoColumnType.text(),
+        enableEditingMode: false,
+        width: 80,
+        minWidth: 70,
+        titleTextAlign: PlutoColumnTextAlign.center,
+        textAlign: PlutoColumnTextAlign.center,
+        renderer: (rendererContext){
+          return Container(
+            padding: const EdgeInsets.all(4),
+            child: Center(
+              child: InkWell(
+                onTap: () {
+                  _deleteRow(rendererContext.rowIdx);
+                },
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.red[300]!),
+                  ),
+                  child: Icon(Icons.delete, size: 16, color: Colors.red),
                 ),
               ),
             ),
@@ -655,6 +708,21 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
         },
       ),
     ];
+  }
+
+  void _deleteRow(int rowIndex) {
+    setState(() {
+      stateManager.removeRows([stateManager.rows[rowIndex]]);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Row $rowIndex deleted'),
+        duration: const Duration(seconds: 2),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   void _saveQuantity(int rowIndex) {
@@ -698,6 +766,7 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
               if (foodDistributionController.isShowLeftQty.value == true)
                 'left_qty': PlutoCell(value: item.totalQty),
               'action': PlutoCell(value: ''),
+              'delete': PlutoCell(value: ''),
             },
           );
         }).toList(),
@@ -751,3 +820,109 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
     );
   }
 }
+
+class EditItemDialog extends StatefulWidget {
+  final FoodItem item;
+  final Function(FoodItem updatedItem) onItemUpdated;
+
+  const EditItemDialog({
+    Key? key,
+    required this.item,
+    required this.onItemUpdated,
+  }) : super(key: key);
+
+  @override
+  _EditItemDialogState createState() => _EditItemDialogState();
+}
+
+class _EditItemDialogState extends State<EditItemDialog> {
+  late TextEditingController _nameEngController;
+  late TextEditingController _nameGujController;
+  late TextEditingController _qtyController;
+  late TextEditingController _unitController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameEngController =
+        TextEditingController(text: widget.item.foodEngName ?? '');
+    _nameGujController =
+        TextEditingController(text: widget.item.foodGujName ?? '');
+    _qtyController =
+        TextEditingController(text: widget.item.totalAssigned?.toString() ?? '0');
+    _unitController = TextEditingController(text: widget.item.foodUnit ?? '');
+  }
+
+  @override
+  void dispose() {
+    _nameEngController.dispose();
+    _nameGujController.dispose();
+    _qtyController.dispose();
+    _unitController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Edit Item'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameEngController,
+            decoration: const InputDecoration(
+              labelText: 'Item Name English',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _nameGujController,
+            decoration: const InputDecoration(
+              labelText: 'Item Name Gujarati',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _qtyController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Quantity',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _unitController,
+            decoration: const InputDecoration(
+              labelText: 'Unit',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            final updated = widget.item.copyWith(
+              foodEngName: _nameEngController.text,
+              foodGujName: _nameGujController.text,
+              totalAssigned: int.tryParse(_qtyController.text) ?? widget.item.totalAssigned,
+              foodUnit: _unitController.text,
+            );
+            widget.onItemUpdated(updated);
+            Navigator.pop(context);
+          },
+          child: const Text('Save'),
+        ),
+      ],
+    );
+  }
+}
+

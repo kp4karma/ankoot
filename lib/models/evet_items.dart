@@ -136,6 +136,29 @@ class FoodItem {
     };
   }
 
+  FoodItem copyWith({
+    int? foodItemId,
+    String? foodEngName,
+    String? foodGujName,
+    String? foodUnit,
+    String? foodCategory,
+    int? totalQty,
+    int? totalAssigned,
+    int? stockRecordsCount,
+  }) {
+    return FoodItem(
+      foodItemId: foodItemId ?? this.foodItemId,
+      foodEngName: foodEngName ?? this.foodEngName,
+      foodGujName: foodGujName ?? this.foodGujName,
+      foodUnit: foodUnit ?? this.foodUnit,
+      foodCategory: foodCategory ?? this.foodCategory,
+      totalQty: totalQty ?? this.totalQty,
+      totalAssigned: totalAssigned ?? this.totalAssigned,
+      stockRecordsCount: stockRecordsCount ?? this.stockRecordsCount,
+    );
+  }
+
+
   // Get formatted display name
   String getDisplayName({bool isGujarati = false}) {
     return isGujarati ? foodGujName : foodEngName;

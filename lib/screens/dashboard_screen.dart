@@ -37,23 +37,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  void _onNotifyPressed() async{
-    final NotificationService notificationService = Get.find();
-    bool success = await notificationService.notifyPradesh(
-      pradeshId: "1",
-      title: "_titleController.text.trim()",
-      message:" _messageController.text.trim()",
-      pradeshName: "Karma",
-    );
-    if (pradeshController.selectedPradesh.value == null) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content:
-        Text('Notification sent to ${pradeshController.selectedPradesh.value?.pradeshEngName}'),
-        backgroundColor: Colors.green,
-      ),
+  void _onNotifyPressed() async {
+    final TextEditingController noteController = TextEditingController();
+    final TextEditingController descriptionController = TextEditingController();
+
+    await showDialog(
+      useSafeArea: true,
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title:  Text("Send message to ${pradeshController.selectedPradesh.value?.pradeshEngName}"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: noteController,
+                decoration: const InputDecoration(
+                  labelText: "Title of the Message",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12))
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: descriptionController,
+                maxLines: 4, // multiline
+                decoration: const InputDecoration(
+                  labelText: "Description about Message",
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(12))
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final NotificationService notificationService = Get.find();
+                bool success = await notificationService.notifyPradesh(
+                  pradeshId: "1",
+                  title: noteController.text.trim(),
+                  message: descriptionController.text.trim(),
+                  pradeshName: "Karma",
+                );
+
+                Navigator.of(context).pop(); // close dialog
+
+                if (success && pradeshController.selectedPradesh.value != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Notification sent to ${pradeshController.selectedPradesh.value?.pradeshEngName}',
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+              child: const Text("Send"),
+            ),
+          ],
+        );
+      },
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
