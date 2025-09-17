@@ -14,7 +14,7 @@ class ApiConfig {
 
   static String get protocol => useHttps ? "https" : "http";
 
-  static const _devApiDomain = "192.168.201.157:3690";
+  static const _devApiDomain = "27.116.52.24:8165";
   static const _profileApiDomain = "";
   static const _prodApiDomain = "";
 
@@ -61,5 +61,7 @@ class ApiEndpoints {
   static String get getPradeshItems => "${ApiConfig.baseUrl}/getPradeshItems/";
   static String get getDefaultPradeshItems => "${ApiConfig.baseUrl}/getDefaultPradeshItems/";
   static String get createNewEvent => "${ApiConfig.baseUrl}/createNewEvent/";
+  static String get fetchHistory => "${ApiConfig.baseUrl}/getFoodStockByPerson/";
+  static String get getPrasadStock => "${ApiConfig.baseUrl}/getPrasadStock/";
 
 }

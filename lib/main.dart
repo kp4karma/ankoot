@@ -2,6 +2,8 @@ import 'package:ankoot_new/api/api_client.dart';
 import 'package:ankoot_new/api/firebase_options.dart';
 import 'package:ankoot_new/api/services/fcm_service.dart';
 import 'package:ankoot_new/screens/mobile/login_screen.dart';
+import 'package:ankoot_new/screens/mobile/splash_screen.dart';
+import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,7 @@ import 'package:get/get.dart';
 Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
   ApiClient.init();
+  UserStorageHelper.init();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   if(kIsWeb){
@@ -44,7 +47,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Ankoot',
+      title: 'HP-Prasadam',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
@@ -57,7 +60,7 @@ class _MyAppState extends State<MyApp> {
         );
         return EasyLoading.init()(context, child);
       },
-      home: const LoginScreen(),
+      home: SplashScreen(),
     );
   }
 }

@@ -172,6 +172,7 @@ class Event {
   final int eventId;
   final String eventName;
   final String status;
+  final String eventData;
   final List<FoodItem> items;
   final int totalItemsCount;
 
@@ -179,6 +180,7 @@ class Event {
     required this.eventId,
     required this.eventName,
     required this.items,
+    required this.eventData,
     required this.status,
     required this.totalItemsCount,
   });
@@ -188,6 +190,7 @@ class Event {
       eventId: json['event_id'] ?? 0,
       eventName: json['event_name'] ?? '',
       status: json['status'] ?? '',
+      eventData: json['event_date'] ?? '',
       items: (json['items'] as List<dynamic>?)
           ?.map((item) => FoodItem.fromJson(item))
           .toList() ?? [],

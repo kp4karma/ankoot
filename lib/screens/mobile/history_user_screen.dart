@@ -1,13 +1,15 @@
-import 'package:ankoot_new/models/evet_items.dart';
+import 'package:ankoot_new/api/history_service.dart';
+import 'package:ankoot_new/models/user_history.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+
 
 class UserFoodItemsScreen extends StatefulWidget {
   String pradeshName;
   String pradeshId;
   String eventId;
-   UserFoodItemsScreen({Key? key,required this.eventId,required this.pradeshId,required this.pradeshName}) : super(key: key);
+  UserFoodItemsScreen({Key? key, required this.eventId, required this.pradeshId, required this.pradeshName}) : super(key: key);
 
   @override
   _UserFoodItemsScreenState createState() => _UserFoodItemsScreenState();
@@ -15,13 +17,16 @@ class UserFoodItemsScreen extends StatefulWidget {
 
 class _UserFoodItemsScreenState extends State<UserFoodItemsScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<UserFoodData> filteredUsers = [];
-  List<UserFoodData> allUsers = [];
+  List<PersonWiseData> filteredUsers = [];
+  List<PersonWiseData> allUsers = [];
+  UserHistory? userHistoryData;
+  bool isLoading = true;
+  String errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _loadDummyData();
+    _loadUserHistoryData();
   }
 
   @override
@@ -30,41 +35,61 @@ class _UserFoodItemsScreenState extends State<UserFoodItemsScreen> {
     super.dispose();
   }
 
-  void _loadDummyData() {
-    allUsers = [
-      UserFoodData(
-        userName: 'Rajesh Kumar',
-        phoneNumber: '+91 9876543210',
-        givenDateTime: DateTime.now().subtract(Duration(hours: 2)),
-        foodItems: [
+  // Replace this method with your actual API call
+  void _loadUserHistoryData() async {
+    try {
+      setState(() {
+        isLoading = true;
+        errorMessage = '';
+      });
 
-        ],
-      ),
-      UserFoodData(
-        userName: 'Priya Sharma',
-        phoneNumber: '+91 9123456789',
-        givenDateTime: DateTime.now().subtract(Duration(hours: 5)),
-        foodItems: [
+      // TODO: Replace with your actual API call
+      UserHistory? response = await HistoryServices.fetchHistory(
+        pradeshId: widget.pradeshId,
+        eventId: widget.eventId,
+      );
 
-        ],
-      ),
+      // For now, using dummy data structure that matches UserHistory model
+      userHistoryData = response;
 
-    ];
+      if (userHistoryData != null && userHistoryData!.data != null) {
+        allUsers = userHistoryData!.data!.personWiseData ?? [];
+        filteredUsers = List.from(allUsers);
+      }
 
-    filteredUsers = List.from(allUsers);
-    setState(() {});
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Error loading data: $e';
+      });
+    }
   }
+
 
   void _handleSearch(String searchText) {
     setState(() {
       if (searchText.isEmpty) {
         filteredUsers = List.from(allUsers);
       } else {
-        filteredUsers = allUsers.where((user) {
-          return user.userName.toLowerCase().contains(searchText.toLowerCase()) ||
-              user.phoneNumber.contains(searchText) ||
-              user.foodItems.any((item) =>
-                  item.foodEngName.toLowerCase().contains(searchText.toLowerCase())||item.foodGujName.toLowerCase().contains(searchText.toLowerCase()));
+        filteredUsers = allUsers.where((personData) {
+          final userName = personData.personDetails?.personName?.toLowerCase() ?? '';
+          final phoneNumber = personData.personDetails?.personMobile ?? '';
+          final searchLower = searchText.toLowerCase();
+
+          // Search in user details
+          bool matchesUser = userName.contains(searchLower) || phoneNumber.contains(searchLower);
+
+          // Search in food items
+          bool matchesFoodItems = personData.foodItems?.any((foodItem) {
+            final engName = foodItem.foodItemDetails?.foodEngName?.toLowerCase() ?? '';
+            final gujName = foodItem.foodItemDetails?.foodGujName?.toLowerCase() ?? '';
+            return engName.contains(searchLower) || gujName.contains(searchLower);
+          }) ?? false;
+
+          return matchesUser || matchesFoodItems;
         }).toList();
       }
     });
@@ -152,18 +177,46 @@ class _UserFoodItemsScreenState extends State<UserFoodItemsScreen> {
     );
   }
 
+
+  Widget _buildSummaryItem(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.deepOrange,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title:  Text(
-          '${widget.pradeshName}',
-          style: TextStyle(fontWeight: FontWeight.w600,color: Colors.white,),
+        title: Text(
+          widget.pradeshName,
+          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
         backgroundColor: Colors.deepOrange,
         foregroundColor: Colors.white,
-        leading: IconButton(onPressed: (){Navigator.pop(context);}, icon: Icon(Icons.chevron_left_outlined,size: 30,color: Colors.white,)),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.chevron_left_outlined, size: 30, color: Colors.white),
+        ),
         elevation: 0,
         centerTitle: true,
       ),
@@ -171,18 +224,52 @@ class _UserFoodItemsScreenState extends State<UserFoodItemsScreen> {
         children: [
           _buildSearchBar(),
           Expanded(
-            child: filteredUsers.isEmpty
+            child: isLoading
+                ? Center(
+              child: CircularProgressIndicator(color: Colors.deepOrange),
+            )
+                : errorMessage.isNotEmpty
+                ? _buildErrorState()
+                : filteredUsers.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: filteredUsers.length,
               itemBuilder: (context, index) {
                 return UserFoodCard(
-                  userData: filteredUsers[index],
+                  personData: filteredUsers[index],
                   index: index,
                 );
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
+          SizedBox(height: 16),
+          Text(
+            'Error Loading Data',
+            style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.w500),
+          ),
+          SizedBox(height: 8),
+          Text(
+            errorMessage,
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadUserHistoryData,
+            child: Text('Retry'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
           ),
         ],
       ),
@@ -194,27 +281,16 @@ class _UserFoodItemsScreenState extends State<UserFoodItemsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.search_off,
-            size: 80,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.search_off, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'No users found',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 8),
           Text(
             'Try adjusting your search terms',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
           ),
         ],
       ),
@@ -223,12 +299,12 @@ class _UserFoodItemsScreenState extends State<UserFoodItemsScreen> {
 }
 
 class UserFoodCard extends StatefulWidget {
-  final UserFoodData userData;
+  final PersonWiseData personData;
   final int index;
 
   const UserFoodCard({
     Key? key,
-    required this.userData,
+    required this.personData,
     required this.index,
   }) : super(key: key);
 
@@ -236,8 +312,7 @@ class UserFoodCard extends StatefulWidget {
   _UserFoodCardState createState() => _UserFoodCardState();
 }
 
-class _UserFoodCardState extends State<UserFoodCard>
-    with SingleTickerProviderStateMixin {
+class _UserFoodCardState extends State<UserFoodCard> with SingleTickerProviderStateMixin {
   bool isExpanded = false;
   late AnimationController _animationController;
   late Animation<double> _expandAnimation;
@@ -272,8 +347,29 @@ class _UserFoodCardState extends State<UserFoodCard>
     });
   }
 
+  DateTime _parseDateTime(String? dateTimeString) {
+    if (dateTimeString == null) return DateTime.now();
+    try {
+      return DateTime.parse(dateTimeString);
+    } catch (e) {
+      return DateTime.now();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final personDetails = widget.personData.personDetails;
+    final foodItems = widget.personData.foodItems ?? [];
+    final summary = widget.personData.summary;
+
+    // Get the latest food item date for display
+    DateTime latestDate = DateTime.now();
+    if (foodItems.isNotEmpty) {
+      latestDate = foodItems
+          .map((item) => _parseDateTime(item.cdt))
+          .reduce((a, b) => a.isAfter(b) ? a : b);
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -303,9 +399,9 @@ class _UserFoodCardState extends State<UserFoodCard>
                         backgroundColor: Colors.deepOrange.withOpacity(0.1),
                         radius: 24,
                         child: Text(
-                          widget.userData.userName
+                          (personDetails?.personName ?? 'U')
                               .split(' ')
-                              .map((name) => name[0])
+                              .map((name) => name.isNotEmpty ? name[0] : '')
                               .take(2)
                               .join()
                               .toUpperCase(),
@@ -322,7 +418,7 @@ class _UserFoodCardState extends State<UserFoodCard>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.userData.userName,
+                              personDetails?.personName ?? 'Unknown User',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -332,18 +428,11 @@ class _UserFoodCardState extends State<UserFoodCard>
                             const SizedBox(height: 2),
                             Row(
                               children: [
-                                Icon(
-                                  Icons.phone,
-                                  size: 14,
-                                  color: Colors.grey[600],
-                                ),
+                                Icon(Icons.phone, size: 14, color: Colors.grey[600]),
                                 const SizedBox(width: 4),
                                 Text(
-                                  widget.userData.phoneNumber,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey[600],
-                                  ),
+                                  personDetails?.personMobile ?? 'No phone',
+                                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                                 ),
                               ],
                             ),
@@ -353,11 +442,7 @@ class _UserFoodCardState extends State<UserFoodCard>
                       AnimatedRotation(
                         turns: isExpanded ? 0.5 : 0,
                         duration: const Duration(milliseconds: 300),
-                        child: Icon(
-                          Icons.keyboard_arrow_down,
-                          color: Colors.grey[600],
-                          size: 24,
-                        ),
+                        child: Icon(Icons.keyboard_arrow_down, color: Colors.grey[600], size: 24),
                       ),
                     ],
                   ),
@@ -367,27 +452,16 @@ class _UserFoodCardState extends State<UserFoodCard>
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            Icons.access_time,
-                            size: 16,
-                            color: Colors.grey[600],
-                          ),
+                          Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
                           const SizedBox(width: 4),
                           Text(
-                            DateFormat('MMM dd, yyyy • hh:mm a')
-                                .format(widget.userData.givenDateTime),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
+                            DateFormat('MMM dd, yyyy • hh:mm a').format(latestDate),
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                           ),
                         ],
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.deepOrange.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
@@ -395,14 +469,10 @@ class _UserFoodCardState extends State<UserFoodCard>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.restaurant,
-                              size: 14,
-                              color: Colors.deepOrange,
-                            ),
+                            Icon(Icons.restaurant, size: 14, color: Colors.deepOrange),
                             const SizedBox(width: 4),
                             Text(
-                              '${widget.userData.foodItems.length} items',
+                              '${foodItems.length} items',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.deepOrange,
@@ -422,17 +492,12 @@ class _UserFoodCardState extends State<UserFoodCard>
             sizeFactor: _expandAnimation,
             child: Container(
               decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Colors.grey[200]!),
-                ),
+                border: Border(top: BorderSide(color: Colors.grey[200]!)),
               ),
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     color: Colors.grey[50],
                     child: Row(
                       children: [
@@ -440,22 +505,14 @@ class _UserFoodCardState extends State<UserFoodCard>
                           flex: 1,
                           child: Text(
                             'Sr.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                            ),
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey[700]),
                           ),
                         ),
                         Expanded(
                           flex: 4,
                           child: Text(
                             'Food Item',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                            ),
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey[700]),
                           ),
                         ),
                         Expanded(
@@ -463,11 +520,7 @@ class _UserFoodCardState extends State<UserFoodCard>
                           child: Text(
                             'Quantity',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                            ),
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey[700]),
                           ),
                         ),
                         Expanded(
@@ -475,11 +528,7 @@ class _UserFoodCardState extends State<UserFoodCard>
                           child: Text(
                             'Unit',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                            ),
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey[700]),
                           ),
                         ),
                       ],
@@ -488,17 +537,16 @@ class _UserFoodCardState extends State<UserFoodCard>
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: widget.userData.foodItems.length,
+                    itemCount: foodItems.length,
                     itemBuilder: (context, index) {
-                      final item = widget.userData.foodItems[index];
+                      final item = foodItems[index];
+                      final foodDetails = item.foodItemDetails;
+
                       return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
                           border: Border(
-                            bottom: index < widget.userData.foodItems.length - 1
+                            bottom: index < foodItems.length - 1
                                 ? BorderSide(color: Colors.grey[200]!)
                                 : BorderSide.none,
                           ),
@@ -509,16 +557,13 @@ class _UserFoodCardState extends State<UserFoodCard>
                               flex: 1,
                               child: Text(
                                 '${index + 1}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey[600],
-                                ),
+                                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                               ),
                             ),
                             Expanded(
                               flex: 4,
                               child: Text(
-                                item.foodGujName,
+                                foodDetails?.foodGujName ?? foodDetails?.foodEngName ?? 'Unknown Item',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
@@ -529,7 +574,7 @@ class _UserFoodCardState extends State<UserFoodCard>
                             Expanded(
                               flex: 2,
                               child: Text(
-                                item.totalQty.toString(),
+                                (item.foodQty).toString().replaceAll("-", "") ?? '0',
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontSize: 14,
@@ -541,12 +586,9 @@ class _UserFoodCardState extends State<UserFoodCard>
                             Expanded(
                               flex: 1,
                               child: Text(
-                                item.foodUnit,
+                                foodDetails?.foodUnit ?? '',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
+                                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                               ),
                             ),
                           ],
@@ -563,18 +605,3 @@ class _UserFoodCardState extends State<UserFoodCard>
     );
   }
 }
-
-class UserFoodData {
-  final String userName;
-  final String phoneNumber;
-  final DateTime givenDateTime;
-  final List<FoodItem> foodItems;
-
-  UserFoodData({
-    required this.userName,
-    required this.phoneNumber,
-    required this.givenDateTime,
-    required this.foodItems,
-  });
-}
-

@@ -1,6 +1,7 @@
 import 'package:ankoot_new/screens/main_screen.dart';
 import 'package:ankoot_new/screens/mobile/mobile_admin_home_screen.dart';
 import 'package:ankoot_new/screens/mobile/mobile_home_screen.dart';
+import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -68,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
 
         } else {
-          if(false){
+          if(UserStorageHelper.getUserData()?.data?.user?.userType.toString().toLowerCase() == "admin" ){
             Navigator.pushReplacement(
               context,
               CupertinoPageRoute(builder: (context) => MobileAdminHomeScreen()),
@@ -126,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         // App Title
                         Text(
-                          'Ankoot',
+                          'HP-Prasadam',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: isLargeScreen ? 48 : 36,

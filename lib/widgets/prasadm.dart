@@ -81,10 +81,6 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
               return _buildDataRow(index, item);
             }).toList(),
 
-            const Divider(thickness: 1),
-
-            // Grand total row
-            _buildGrandTotalRow(),
             SizedBox(height: 4,),
             const Divider(thickness: 1),
             Padding(
@@ -95,7 +91,9 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
 
-                      Expanded(
+                      Flexible(
+                        fit: FlexFit.tight,
+                        flex: 4,
                         child: Text(
                           "નોધ:- તા. 23-09-2025. સુધી માં AVD મંદિર એ મોકલી આપવું.",
                           style: TextStyle(
@@ -105,10 +103,14 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
                           ),
                         ),
                       ),
-                      Card(color: Colors.green.shade800,elevation: 0,shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8),),child:  Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
-                        child: Text("Save",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),),
-                      ),)
+                      Flexible(
+                        fit: FlexFit.tight,
+                        flex: 2,
+                        child: Card(color: Colors.green.shade800,elevation: 0,shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8),),child:  Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
+                          child: Center(child: Text("Save",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),)),
+                        ),),
+                      )
                     ],
                   ),
                 ],
@@ -210,47 +212,6 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
     );
   }
 
-  Widget _buildGrandTotalRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 0.0),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: Text(
-              'Grand Total',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepOrange,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
-              decoration: BoxDecoration(
-                color: Colors.deepOrange.withAlpha(20),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.deepOrange.shade200),
-              ),
-              child: Text(
-                grandTotal.toString(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepOrange,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 // Model class for Prasadam items

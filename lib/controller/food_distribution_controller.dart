@@ -21,6 +21,7 @@ class FoodDistributionController extends GetxController {
   final RxList<FoodItem> _filteredItems = <FoodItem>[].obs;
   final RxString _selectedCategory = 'All'.obs;
 
+  RxInt selectedEventIndex = 0.obs;
   // Getters
   FoodDistributionResponse? get distributionData => _distributionData.value;
   bool get isLoading => _isLoading.value;
@@ -63,6 +64,10 @@ class FoodDistributionController extends GetxController {
         _distributionData.value = response;
         _uniqueEvents.value = FoodDistributionHelper.extractUniqueEvents(response);
         _uniquePradeshs.value = FoodDistributionHelper.extractUniquePradeshs(response);
+
+        if(_uniqueEvents.length > 0){
+          selectedEventIndex.value = _uniqueEvents.value.first.eventId;
+        }
 
         // Auto-select the first pradesh if available
         if (_uniquePradeshs.isNotEmpty) {

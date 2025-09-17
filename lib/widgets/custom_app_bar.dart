@@ -19,7 +19,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Row(
         children: [
           const Text(
-            'Ankoot',
+            'HP-Prasadam',
             style: TextStyle(
               color: AppTheme.primaryColors,
               fontWeight: FontWeight.bold,
