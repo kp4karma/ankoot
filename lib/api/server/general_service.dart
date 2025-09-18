@@ -1,12 +1,14 @@
 import 'dart:convert';
 
 import 'package:ankoot_new/api/api_endpoints.dart';
+import 'package:ankoot_new/api/services/fcm_service.dart';
 import 'package:ankoot_new/models/event_data_model.dart';
 import 'package:ankoot_new/models/evet_items.dart';
 import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dio/dio.dart';
+import 'package:get/get.dart' hide Response;
 
 import '../../helper/toast/toast_helper.dart';
 import '../../models/user_data_model.dart';
@@ -17,6 +19,28 @@ class GeneralService {
   static Future<bool> insertData(Map<String, dynamic> payload) async {
     return _sendRequest(ApiEndpoints.insertData, payload, "Insert");
   }
+
+  static Future<bool> savePrasadData(Map<String, dynamic> payload) async {
+    try {
+      final Response response = await ApiClient.post(
+        ApiEndpoints.savePrasadData,
+        data: payload,
+      );
+
+      // You can adjust this depending on how your backend responds
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.toString());
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print("❌ savePrasadData error: $e");
+      return false;
+    }
+  }
+
 
   /// Update Data
   static Future<bool> updateData(Map<String, dynamic> payload) async {
@@ -103,6 +127,9 @@ class GeneralService {
           return false;
         }
 
+        final NotificationService notificationService = Get.find();
+
+        await notificationService.initializeUserSubscriptions(eventIds: [],pradeshIds: ["${userDataModel.data?.pradeshAssignment?.pradeshId.toString()}"],userId: user.userId.toString(), userType: user.userType.toString());
         showToast(
           context: context,
           title: msg,

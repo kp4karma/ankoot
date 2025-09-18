@@ -4,24 +4,24 @@ import 'package:ankoot_new/models/evet_items.dart';
 import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class PrasadamWidget extends StatefulWidget {
   final String? eventId;
   PrasadStock prasadStock;
 
-   PrasadamWidget({
-    Key? key,
-    this.eventId,
-    required this.prasadStock,
-  }) : super(key: key);
+  PrasadamWidget({Key? key, this.eventId, required this.prasadStock})
+    : super(key: key);
 
   @override
   State<PrasadamWidget> createState() => _PrasadamWidgetState();
 }
 
 class _PrasadamWidgetState extends State<PrasadamWidget> {
-  FoodDistributionController foodDistributionController = Get.find<FoodDistributionController>();
+  FoodDistributionController foodDistributionController =
+      Get.find<FoodDistributionController>();
 
   List<PrasadamItem> prasadamItems = [
     PrasadamItem(title: 'Prasad Box', key: 'box'),
@@ -39,16 +39,15 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
     _addListeners();
   }
 
-  void _initializeControllers()async {
+  void _initializeControllers() async {
     try {
-
-
+      print("${foodDistributionController.selectedEventIndex}");
       print("selectedEvent.toJson() ${widget.prasadStock.toJson()}");
       controllers['box'] = TextEditingController(
-        text: widget.prasadStock.prasadBoxQty ?? "",
+        text: (widget.prasadStock.prasadBoxQty ?? "").toString().replaceAll(".00", ""),
       );
       controllers['packet'] = TextEditingController(
-        text: widget.prasadStock.prasadPacketQty ?? "",
+        text: (widget.prasadStock.prasadPacketQty ?? "").toString().replaceAll(".00", ""),
       );
     } catch (e) {
       // If no event found, initialize with empty values
@@ -81,49 +80,64 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
     });
 
     try {
-      final Map<String, dynamic> prasadData = {
-        'table':'prasadStock',
-        'prasad_box_qty': int.tryParse(controllers['box']?.text ?? '0')??0,
-        'prasad_packet_qty': int.tryParse(controllers['packet']?.text ?? '0')??0,
-        'event_id': foodDistributionController.selectedEventIndex.value.toString(),
-        'pradesh_id': UserStorageHelper.getUserData()?.data?.pradeshAssignment?.pradeshId.toString()??"",
-      };
+      final int boxQty = int.tryParse(controllers['box']?.text ?? '0') ?? 0;
+      final int packetQty = int.tryParse(controllers['packet']?.text ?? '0') ?? 0;
 
-      // Update local controller data
-      final selectedEvent = foodDistributionController.uniqueEvents.firstWhere(
-            (element) => element.eventId == foodDistributionController.selectedEventIndex.value,
-      );
-      bool temp = false;
-      if(selectedEvent.prasadStock?.id == null){
-         temp = await GeneralService.insertData(prasadData);
-      }else{
-         temp = await GeneralService.updateData(prasadData);
+      // ✅ Validation
+      if (boxQty == 0 && packetQty == 0) {
+        EasyLoading.showError("Please enter Prasad quantity (Box or Packet)!");
+        setState(() => _isLoading = false);
+        return;
       }
 
+      final Map<String, dynamic> prasadData = {
+        'prasad_box_qty': boxQty.toString(),
+        'prasad_packet_qty': packetQty.toString(),
+        'person_mobile':UserStorageHelper.getUserData()?.data?.user?.userMobile.toString(),
+        'person_name':UserStorageHelper.getUserData()?.data?.user?.userName.toString(),
+        'event_id': foodDistributionController.selectedEventIndex.value.toString(),
+        'pradesh_id': UserStorageHelper.getUserData()
+            ?.data
+            ?.pradeshAssignment
+            ?.pradeshId
+            .toString() ??
+            "",
+      };
 
-     if(temp == true){
+      // ✅ Always call one API
+      final success = await GeneralService.savePrasadData(prasadData);
 
-       if (selectedEvent.prasadStock != null) {
-         selectedEvent.prasadStock!.prasadBoxQty = prasadData['box_qty'];
-         selectedEvent.prasadStock!.prasadPacketQty = prasadData['packet_qty'];
-       }
+      if (success) {
+        final selectedEvent = foodDistributionController.uniqueEvents.firstWhere(
+              (element) =>
+          element.eventId ==
+              foodDistributionController.selectedEventIndex.value,
+        );
 
-       setState(() {
-         _hasUnsavedChanges = false;
-       });
-       await foodDistributionController.loadData();
-       _showSuccessSnackBar('Prasad data saved successfully!');
+        if (selectedEvent.prasadStock != null) {
+          selectedEvent.prasadStock!.prasadBoxQty = boxQty.toString();
+          selectedEvent.prasadStock!.prasadPacketQty = packetQty.toString();
+        }
 
-     }
+        setState(() {
+          _hasUnsavedChanges = false;
+        });
 
+        await foodDistributionController.loadData();
+
+        EasyLoading.showSuccess("Prasad data saved successfully!");
+      } else {
+        EasyLoading.showError("Something went wrong. Please try again!");
+      }
     } catch (e) {
-      _showErrorSnackBar('Failed to save prasad data: ${e.toString()}');
+      EasyLoading.showError("Failed: ${e.toString()}");
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
+
 
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -159,8 +173,6 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
     );
   }
 
-
-
   int get _totalItems {
     int total = 0;
     controllers.forEach((key, controller) {
@@ -171,16 +183,14 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
       children: [
-        Divider(thickness: 2,),
+        Divider(thickness: 2),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -210,18 +220,10 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
                               color: Colors.deepOrange.shade700,
                             ),
                           ),
-                          Text(
-                            'Total Items: $_totalItems',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
                         ],
                       ),
                     ],
                   ),
-
                 ],
               ),
 
@@ -266,75 +268,107 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
 
               SizedBox(height: 8),
 
-              // Data rows
-              ...prasadamItems.map((item) => _buildDataRow(item)).toList(),
+              ...prasadamItems.map((item) => _buildDataRow(item,isEventExpired)).toList(),
 
               SizedBox(height: 16),
 
-
-              // Action buttons
-              Row(
-                children: [
-                  // Save button
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton.icon(
-                      onPressed: _isLoading  ? null : _savePrasadData,
-                      icon: _isLoading
-                          ? SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              if (!isEventExpired) ...[
+                Row(
+                  children: [
+                    // Save button
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _savePrasadData,
+                        icon: _isLoading
+                            ? SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : Icon(Icons.save, size: 18),
+                        label: Text(_isLoading ? 'Saving...' : 'Save Stock'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade700,
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 12),
                         ),
-                      )
-                          : Icon(Icons.save, size: 18),
-                      label: Text(_isLoading ? 'Saving...' : 'Save Stock'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade700,
-                        foregroundColor: Colors.white,
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Column(
-                children: [
-                  // Note
-                  Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.shade200),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info, color: Colors.red.shade600, size: 20),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            "નોધ:- તા. 23-09-2025. સુધી માં AVD મંદિર એ મોકલી આપવું.",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.red.shade700,
-                              fontWeight: FontWeight.w500,
+                  ],
+                ),
+                SizedBox(height: 16),
+                Column(
+                  children: [
+                    // Note
+                    Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info,
+                            color: Colors.red.shade600,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "નોધ:- તા. ${DateFormat("dd-MM-yyyy").format(DateTime.parse(foodDistributionController.uniqueEvents.singleWhere(
+                                (element) => element.eventId == foodDistributionController.selectedEventIndex.value,
+                                orElse: () => Event(eventMaxPrasadDate: DateTime.now().toString(), eventItemLastDate: DateTime.now().toString(), eventId: 0, eventName: "", items: [], eventData: DateTime.now().toString(), status: "", prasadStock: PrasadStock(), totalItemsCount: 0),
+                              ).eventMaxPrasadDate))} સુધીમાં તમારી પ્રસાદની સંખ્યા અપડેટ કરી દેવી.  ",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.red.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                  ],
+                ),
+              ] else ...[
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.shade200),
                   ),
-
-                ],
-              ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info, color: Colors.red.shade600, size: 20),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "નોધ:- પ્રસાદની સંખ્યા અપડેટ કરવા માટે પ. આનંદસાગર સ્વામીજી અથવા પ. અનૂગ્રહ સ્વામીજીનો સંપર્ક કરવો.",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.red.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -342,7 +376,32 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
     );
   }
 
-  Widget _buildDataRow(PrasadamItem item) {
+  bool get isEventExpired {
+    final selectedEvent = foodDistributionController.uniqueEvents.singleWhere(
+      (element) =>
+          element.eventId ==
+          foodDistributionController.selectedEventIndex.value,
+      orElse: () => Event(
+        eventMaxPrasadDate: DateTime.now().toString(),
+        eventItemLastDate: DateTime.now().toString(),
+        eventId: 0,
+        eventName: "",
+        items: [],
+        eventData: DateTime.now().toString(),
+        status: "",
+        prasadStock: PrasadStock(),
+        totalItemsCount: 0,
+      ),
+    );
+
+    final lastDate = DateTime.tryParse(selectedEvent.eventMaxPrasadDate);
+
+    if (lastDate == null) return false; // invalid date → consider not expired
+
+    return DateTime.now().isAfter(lastDate); // ✅ true if expired
+  }
+
+  Widget _buildDataRow(PrasadamItem item,bool isReadOnly) {
     return Container(
       key: UniqueKey(),
       margin: EdgeInsets.symmetric(vertical: 4),
@@ -398,6 +457,7 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               textAlign: TextAlign.center,
+              readOnly: isReadOnly,
               decoration: InputDecoration(
                 hintText: '0',
                 border: OutlineInputBorder(
@@ -420,16 +480,15 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
                 filled: true,
                 fillColor: Colors.grey.shade50,
               ),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
         ],
       ),
     );
   }
+
+
 }
 
 // Enhanced model class for Prasadam items
@@ -438,9 +497,5 @@ class PrasadamItem {
   final String key;
   int total;
 
-  PrasadamItem({
-    required this.title,
-    required this.key,
-    this.total = 0,
-  });
+  PrasadamItem({required this.title, required this.key, this.total = 0});
 }

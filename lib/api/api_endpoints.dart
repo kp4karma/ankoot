@@ -14,8 +14,9 @@ class ApiConfig {
 
   static String get protocol => useHttps ? "https" : "http";
 
-  // static const _devApiDomain = "27.116.52.24:8165";
-  static const _devApiDomain = "192.168.201.157:3690";
+  static const _devApiDomain = "27.116.52.24:8165";
+  // static const _devApiDomain = "10.122.224.5:3690";
+  // static const _devApiDomain = "192.168.201.157:3690";
   static const _profileApiDomain = "";
   static const _prodApiDomain = "";
 
@@ -63,5 +64,6 @@ class ApiEndpoints {
   static String get insertData => "${ApiConfig.baseUrl}/insertData/";
   static String get updateData => "${ApiConfig.baseUrl}/updateData/";
   static String get deleteData => "${ApiConfig.baseUrl}/deleteData/";
+  static String get savePrasadData => "${ApiConfig.baseUrl}/upsertPrasadStock/";
 
 }

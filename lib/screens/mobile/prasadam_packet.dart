@@ -1,6 +1,7 @@
 import 'package:ankoot_new/api/api_client.dart';
 import 'package:ankoot_new/api/api_endpoints.dart';
 import 'package:ankoot_new/api/server/general_service.dart';
+import 'package:ankoot_new/controller/food_distribution_controller.dart';
 import 'package:ankoot_new/models/PrasadmRecords.dart';
 import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:ankoot_new/widgets/search_bar.dart';
@@ -32,6 +33,7 @@ class _PradeshPacketDistributionScreenState
   late List<PradeshWiseData> filteredPradeshData;
   PrasadmRecords? prasadmRecords;
 
+  FoodDistributionController foodDistributionController = Get.find<FoodDistributionController>();
   // Controllers
   TextEditingController searchController = TextEditingController();
   String? selectedPradeshId;
@@ -591,6 +593,7 @@ class _PradeshPacketDistributionScreenState
           prasadRecords: prasadRecords,
           onSave: () async{
             //5555
+            await foodDistributionController.loadData();
             setState(() {
 
             });
