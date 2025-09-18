@@ -110,11 +110,18 @@ class _SplashScreenState extends State<SplashScreen>
 
 
       if(kIsWeb){
+        if(UserStorageHelper.getUserData()?.data?.user?.userType != null){
+          Navigator.pushReplacement(
+            context,
+            CupertinoPageRoute(builder: (context) => MainScreen()),
+          );
+        }else{
+          Navigator.pushReplacement(
+            context,
+            CupertinoPageRoute(builder: (context) => LoginScreen()),
+          );
+        }
 
-        Navigator.pushReplacement(
-          context,
-          CupertinoPageRoute(builder: (context) => MainScreen()),
-        );
       }else{
         if(UserStorageHelper.getUserData()?.data?.user?.userType != null){
           if( UserStorageHelper.getUserData()?.data?.user?.userType.toString().toLowerCase() == "admin" ){

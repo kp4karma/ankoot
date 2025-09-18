@@ -14,8 +14,8 @@ class ApiConfig {
 
   static String get protocol => useHttps ? "https" : "http";
 
-  static const _devApiDomain = "27.116.52.24:8165";
-  // static const _devApiDomain = "192.168.201.157:3690";
+  // static const _devApiDomain = "27.116.52.24:8165";
+  static const _devApiDomain = "192.168.201.157:3690";
   static const _profileApiDomain = "";
   static const _prodApiDomain = "";
 

@@ -44,6 +44,10 @@ class FoodDistributionController extends GetxController {
     return ['All', ...cats];
   }
 
+  Event singleFindEvent(){
+   return uniqueEvents.singleWhere((element) => element.eventId.toString() == selectedEventIndex.toString(),);
+  }
+
   @override
   void onInit() {
     super.onInit();

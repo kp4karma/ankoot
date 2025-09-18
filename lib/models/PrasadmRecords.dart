@@ -218,6 +218,7 @@ class PradeshDetails {
 
 class PrasadRecords {
   EventDetails? eventDetails;
+  int? prasadId;
   String? prasadBoxQty;
   String? prasadPacketQty;
   String? deliverBoxQty;
@@ -230,6 +231,7 @@ class PrasadRecords {
 
   PrasadRecords(
       {this.eventDetails,
+        this.prasadId,
         this.prasadBoxQty,
         this.prasadPacketQty,
         this.deliverBoxQty,
@@ -245,6 +247,7 @@ class PrasadRecords {
         ? new EventDetails.fromJson(json['event_details'])
         : null;
     prasadBoxQty = json['prasad_box_qty'];
+    prasadId = json['prasad_id'];
     prasadPacketQty = json['prasad_packet_qty'];
     deliverBoxQty = json['deliver_box_qty'];
     deliverPacketQty = json['deliver_packet_qty'];
@@ -261,6 +264,7 @@ class PrasadRecords {
       data['event_details'] = this.eventDetails!.toJson();
     }
     data['prasad_box_qty'] = this.prasadBoxQty;
+    data['prasad_id'] = this.prasadId;
     data['prasad_packet_qty'] = this.prasadPacketQty;
     data['deliver_box_qty'] = this.deliverBoxQty;
     data['deliver_packet_qty'] = this.deliverPacketQty;

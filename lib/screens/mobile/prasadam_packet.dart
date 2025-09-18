@@ -1,10 +1,14 @@
 import 'package:ankoot_new/api/api_client.dart';
 import 'package:ankoot_new/api/api_endpoints.dart';
+import 'package:ankoot_new/controller/food_distribution_controller.dart';
 import 'package:ankoot_new/models/PrasadmRecords.dart';
+import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:ankoot_new/widgets/search_bar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
+
+import 'package:get/get.dart' hide Response;
 
 class PradeshPacketDistributionScreen extends StatefulWidget {
 
@@ -413,6 +417,7 @@ class _PradeshPacketDistributionScreenState
     final pradeshTotals = data.pradeshTotals;
     final pradeshDetails = data.pradeshDetails;
 
+
     return InkWell(
       onTap: () => _showDeliveryBottomSheet(context, data, index),
       child: Container(
@@ -596,18 +601,19 @@ class _PradeshPacketDistributionScreenState
       backgroundColor: Colors.transparent,
       builder: (context) => DeliveryBottomSheet(
         pradeshWiseData: data,
-        onSave: (updatedData) {
+        onSave: (updatedData) async{
+
           setState(() {
             // Update in both original and filtered lists
-            final originalIndex = pradeshData.indexWhere(
-              (item) =>
-                  item.pradeshDetails?.pradeshId ==
-                  updatedData.pradeshDetails?.pradeshId,
-            );
-            if (originalIndex != -1) {
-              pradeshData[originalIndex] = updatedData;
-            }
-            filteredPradeshData[index] = updatedData;
+            // final originalIndex = pradeshData.indexWhere(
+            //   (item) =>
+            //       item.pradeshDetails?.pradeshId ==
+            //       updatedData.pradeshDetails?.pradeshId,
+            // );
+            // if (originalIndex != -1) {
+            //   pradeshData[originalIndex] = updatedData;
+            // }
+            // filteredPradeshData[index] = updatedData;
           });
         },
       ),
@@ -768,6 +774,20 @@ class _DeliveryBottomSheetState extends State<DeliveryBottomSheet> {
   }
 
   void _saveChanges() {
+
+    print("ddd ${widget.pradeshWiseData.prasadRecords}");
+    Map<String,dynamic> data = {
+      "table":"prasadStock",
+      "id":widget.pradeshWiseData.prasadRecords?.first.prasadId,
+      "deliver_box_qty":  int.tryParse(deliveredBoxController.text) ?? 0,
+      "deliver_packet_qty":  int.tryParse(deliveredPacketController.text) ?? 0,
+      "person_name":"${UserStorageHelper.getUserData()?.data?.user?.userName.toString() ??"Admin"}",
+      "person_mobile":"${UserStorageHelper.getUserData()?.data?.user?.userMobile.toString() ??"369"}"
+    };
+
+
+    print(data);
+
     final updatedTotals = PradeshTotals(
       totalBoxQty: int.tryParse(boxController.text) ?? 0,
       totalPacketQty: int.tryParse(packetController.text) ?? 0,
