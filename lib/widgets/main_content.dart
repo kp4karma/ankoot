@@ -2,10 +2,15 @@ import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:ankoot_new/theme/app_theme.dart';
 import 'package:ankoot_new/widgets/evetn_screen.dart';
+import 'package:get/get.dart';
 
+import '../api/services/fcm_service.dart';
+import '../controller/CRUD_controller.dart';
+import '../controller/food_distribution_controller.dart';
+import '../helper/toast/toast_helper.dart';
 import '../models/evet_items.dart';
 
-class MainContent extends StatelessWidget {
+class MainContent extends StatefulWidget {
   final Pradesh selectedPradesh;
   final Function() onNotifyPressed;
 
@@ -14,6 +19,15 @@ class MainContent extends StatelessWidget {
     required this.selectedPradesh,
     required this.onNotifyPressed,
   });
+
+  @override
+  State<MainContent> createState() => _MainContentState();
+}
+
+class _MainContentState extends State<MainContent> {
+
+  final FoodDistributionController pradeshController = Get.put(FoodDistributionController());
+
 
   Future<bool?> _showSendToPradeshDialog(BuildContext context) {
     return showDialog<bool>(
@@ -57,10 +71,9 @@ class MainContent extends StatelessWidget {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
-    if (selectedPradesh == null || selectedPradesh!.pradeshId == 0) {
+    if (widget.selectedPradesh == null || widget.selectedPradesh!.pradeshId == 0) {
       return Container(
         color: const Color(0xFFF5F5F5),
         child: Center(
@@ -103,19 +116,67 @@ class MainContent extends StatelessWidget {
         onPressed: () async {
           final confirmed = await _showSendToPradeshDialog(context);
           if (confirmed == true) {
-            // Execute your API call or controller action
-            print("✅ Proceed with sending to pradesh");
-            print("${UserStorageHelper.getUserData()!.data!.pradeshAssignment!.pradeshId}");
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Sent to pradesh successfully!"),
-                backgroundColor: Colors.green,
-              ),
-            );
+            try {
+              final pradeshId = widget.selectedPradesh.pradeshId.toString();
+              final eventId = widget.selectedPradesh.events.first.eventId.toString();
+
+              print("➡️ Sending to pradeshId: $pradeshId, eventId: $eventId");
+
+              // ✅ Call API
+              final success = await PradeshController.assignItemToPradesh(
+                pradeshId: pradeshId,
+                eventId: eventId,
+              );
+
+              if (success) {
+                showToast(
+                  context: context,
+                  title: "Success",
+                  type: ToastType.success,
+                  message: "✅ Sent to pradesh successfully!",
+                );
+              } else {
+                showToast(
+                  context: context,
+                  title: "Error",
+                  type: ToastType.error,
+                  message: "❌ Failed to send to pradesh",
+                );
+              }
+            } catch (e) {
+              print("❌ Error assigning to pradesh: $e");
+              showToast(
+                context: context,
+                title: "Error",
+                type: ToastType.error,
+                message: "⚠️ Something went wrong",
+              );
+            }
           } else {
             print("❌ Cancelled by user");
           }
+          final NotificationService notificationService = Get.find();
+          bool success = await notificationService.notifyPradesh(
+            pradeshId: pradeshController.selectedPradesh.value?.pradeshId.toString() ?? '', title: 'Assigned Annakut Items', message: 'Refer and Check all items',
+          );
+
+          Navigator.of(context).pop(); // close dialog
+
+          if (success && pradeshController.selectedPradesh.value != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Notification sent to ${pradeshController.selectedPradesh.value?.pradeshEngName}',
+                ),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+
+
+
         },
+
         backgroundColor: AppTheme.primaryColors,
         icon: const Icon(Icons.reduce_capacity, color: Colors.white),
         label: const Text(
@@ -160,7 +221,7 @@ class MainContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  selectedPradesh!.pradeshGujName, // ✅ Gujarati only
+                  widget.selectedPradesh!.pradeshGujName, // ✅ Gujarati only
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 8),
@@ -168,7 +229,7 @@ class MainContent extends StatelessWidget {
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
-                  children: selectedPradesh!.pradeshUsers.map((user) {
+                  children: widget.selectedPradesh!.pradeshUsers.map((user) {
                     return Chip(
                       avatar: const Icon(Icons.person, size: 18),
                       label: Text(
@@ -185,7 +246,7 @@ class MainContent extends StatelessWidget {
 
           // Notify button
           ElevatedButton.icon(
-            onPressed: onNotifyPressed,
+            onPressed: widget.onNotifyPressed,
             icon: const Icon(Icons.notifications, size: 16),
             label: const Text('Notify'),
             style: ElevatedButton.styleFrom(

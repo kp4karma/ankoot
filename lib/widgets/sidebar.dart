@@ -8,7 +8,7 @@ import '../models/evet_items.dart';
 import '../theme/app_theme.dart';
 import '../widgets/search_bar.dart';
 
-class Sidebar extends StatelessWidget {
+class Sidebar extends StatefulWidget {
   final Function(Pradesh) onPradeshSelected;
   final Pradesh? selectedPradesh;
 
@@ -18,6 +18,13 @@ class Sidebar extends StatelessWidget {
     this.selectedPradesh,
   });
 
+  @override
+  State<Sidebar> createState() => _SidebarState();
+}
+
+class _SidebarState extends State<Sidebar> {
+
+  String _searchQuery = '';
   @override
   Widget build(BuildContext context) {
     final FoodDistributionController pradeshController = Get.put(FoodDistributionController());
@@ -40,7 +47,13 @@ class Sidebar extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: ReusableSearchBar(onChanged: (value) {}),
+            child: ReusableSearchBar(
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase().trim();
+                });
+              },
+            ),
           ),
         ],
       ),
@@ -51,23 +64,23 @@ class Sidebar extends StatelessWidget {
     return Expanded(
       child: Obx(() {
         if (controller.isLoading) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
-        // Safe way to find a single element
-        final pradesh = controller.uniquePradeshs.firstWhereOrNull(
-              (p) => p.pradeshId == controller.selectedPradesh.value.pradeshId,
-        );
+        List<Pradesh> filteredPradeshs = controller.uniquePradeshs.where((p) {
+          final engName = p.pradeshEngName?.toLowerCase() ?? '';
+          final gujName = p.pradeshGujName?.toLowerCase() ?? '';
+          return engName.contains(_searchQuery) || gujName.contains(_searchQuery);
+        }).toList();
 
-        // If pradesh not found, show loading indicator
-        if (pradesh == null) {
-          return Center(child: CircularProgressIndicator());
+        if (filteredPradeshs.isEmpty) {
+          return const Center(child: Text("No matching Pradesh found"));
         }
 
         return ListView.builder(
-          itemCount: controller.uniquePradeshs.length,
+          itemCount: filteredPradeshs.length,
           itemBuilder: (context, index) {
-            final pradesh = controller.uniquePradeshs[index];
+            final pradesh = filteredPradeshs[index];
             final isSelected =
                 controller.selectedPradesh.value.pradeshId == pradesh.pradeshId;
 
@@ -79,7 +92,10 @@ class Sidebar extends StatelessWidget {
                     ? AppTheme.primaryColors.withOpacity(0.1)
                     : Colors.transparent,
                 border: isSelected
-                    ? Border.all(color: AppTheme.primaryColors.withOpacity(0.1), width: 1)
+                    ? Border.all(
+                  color: AppTheme.primaryColors.withOpacity(0.1),
+                  width: 1,
+                )
                     : null,
               ),
               child: ListTile(
@@ -99,7 +115,8 @@ class Sidebar extends StatelessWidget {
                   ),
                   child: Icon(
                     Icons.location_city,
-                    color: isSelected ? AppTheme.primaryColors : Colors.grey.shade600,
+                    color:
+                    isSelected ? AppTheme.primaryColors : Colors.grey.shade600,
                     size: 20,
                   ),
                 ),
@@ -111,15 +128,15 @@ class Sidebar extends StatelessWidget {
                   ),
                 ),
                 subtitle: Text(
-                  " ${pradesh.pradeshGujName}",
+                  pradesh.pradeshGujName ?? '',
                   style: TextStyle(
                     fontSize: 12,
                     color: isSelected ? AppTheme.primaryColors : Colors.grey,
                   ),
                 ),
                 onTap: () {
-                  controller.selectedPradesh.value = pradesh; // update selection
-                  onPradeshSelected(pradesh); // callback
+                  controller.selectedPradesh.value = pradesh;
+                  widget.onPradeshSelected(pradesh);
                 },
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 12,

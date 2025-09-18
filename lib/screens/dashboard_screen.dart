@@ -80,12 +80,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
+                print("📨 Sending notification to pradesh ${noteController.text}");
+                print("📨 Sending notification to pradesh ${descriptionController.text}");
+
+
                 final NotificationService notificationService = Get.find();
                 bool success = await notificationService.notifyPradesh(
-                  pradeshId: "1",
+                  pradeshId: pradeshController.selectedPradesh.value?.pradeshId.toString() ?? '',
                   title: noteController.text.trim(),
                   message: descriptionController.text.trim(),
-                  pradeshName: "Karma",
                 );
 
                 Navigator.of(context).pop(); // close dialog

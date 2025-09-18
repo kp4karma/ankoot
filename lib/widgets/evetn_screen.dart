@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'package:ankoot_new/models/evet_items.dart';
 import 'package:ankoot_new/theme/app_theme.dart';
+import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 import 'package:get/get.dart';
 
+import '../controller/CRUD_controller.dart';
 import '../controller/food_distribution_controller.dart';
+import '../controller/item_master_controller.dart';
+import '../helper/toast/toast_helper.dart';
 import 'custom_add_item_button.dart';
 
 // Main Screen Widget
@@ -20,6 +24,20 @@ class _EventScreenState extends State<EventScreen> {
   String searchQuery = '';
 
   final foodDistributionController = Get.put(FoodDistributionController());
+  final itemMasterController = Get.put(ItemMasterController());
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData(); // ✅ Add this
+
+  }
+
+  void _initializeData() async {
+    await itemMasterController.fetchItems(); // ✅ Fetch items on startup
+
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -197,6 +215,9 @@ class EventSelectionCard extends StatefulWidget {
 
 class _EventSelectionCardState extends State<EventSelectionCard> {
   late TextEditingController _searchController;
+  final itemMasterController = Get.put(ItemMasterController());
+  final foodDistributionController = Get.put(FoodDistributionController());
+
   Timer? _debounce;
 
   @override
@@ -327,47 +348,91 @@ class _EventSelectionCardState extends State<EventSelectionCard> {
                 ),
                 Container(
                   margin: const EdgeInsets.only(left: 16, right: 0),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
+                  child:Obx(() => ElevatedButton.icon(
+                    onPressed: itemMasterController.isLoading.value
+                        ? null
+                        : () {
+                      if (itemMasterController.items.isEmpty) {
+                        // Show message if no items
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('No items available. Please check your connection.'),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                        return;
+                      }
+
+                      print("🔹 Opening AddItemDialog");
+                      print("🔹 Selected Event ID: ${widget.selectedIndex}");
+                      print("🔹 Selected Pradesh ID: ${foodDistributionController.selectedPradesh.value.pradeshId}");
+
+
+
                       showDialog(
                         context: context,
                         builder: (context) => AddItemDialog(
-                          onItemAdded: (newItem) {
-                            // TODO: Add logic to save in your list/controller
-                            print(
-                              "New Item Added: ${newItem.foodEngName} - ${newItem.foodUnit}",
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "Item ${newItem.foodEngName} added!",
-                                ),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          },
+                          availableItems: itemMasterController.items.toList(),
+                            onItemAdded: (item, qty) async {
+
+                            print("${widget.selectedIndex.toString()}");
+                            print("${foodDistributionController.selectedPradesh.value.pradeshId.toString()}");
+
+                              // ✅ Call Insert API
+                              final response = await PradeshController.insertPradeshData(
+                                pradeshId: foodDistributionController.selectedPradesh.value.pradeshId.toString(),
+                                eventId: widget.selectedIndex.toString(), // ✅ use widget.selectedIndex
+                                itemId: item.foodItemId.toString(),
+                                quantity: qty.toString(),
+                                pradeshGujName: foodDistributionController.selectedPradesh.value.pradeshGujName ?? '',
+                                pradeshEngName: foodDistributionController.selectedPradesh.value.pradeshEngName ?? '',
+                                foodEngName: item.foodEngName ?? '',
+                                foodGujName: item.foodGujName ?? '',
+                                personName: UserStorageHelper.getUserData()!.data!.user!.userName.toString(),
+                                personMobile: UserStorageHelper.getUserData()!.data!.user!.userMobile.toString(),
+                              );
+
+                              if (response == true) {
+                                showToast(
+                                  context: context,
+                                  title: "Success",
+                                  type: ToastType.success,
+                                  message: "successfully added",
+                                );
+
+                                // Optionally refresh
+                                await foodDistributionController.loadData();
+                                setState(() {});
+                              } else {
+                                showToast(
+                                  context: context,
+                                  title: "Error",
+                                  type: ToastType.error,
+                                  message: "not added",
+                                );
+                              }
+                            },
+
+
                         ),
                       );
                     },
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Add New'),
+                    icon: itemMasterController.isLoading.value
+                        ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2)
+                    )
+                        : const Icon(Icons.add, size: 18),
+                    label: Text(itemMasterController.isLoading.value ? 'Loading...' : 'Add New'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.deepOrange,
                       foregroundColor: Colors.white,
-                      elevation: 2,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(8),
-                        ),
-                      ),
-                      fixedSize: const Size.fromHeight(36),
                     ),
-                  ),
-                ),
+                  ))
+                  ,
+                )
+
               ],
             ),
           ),
@@ -685,14 +750,12 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
         minWidth: 70,
         titleTextAlign: PlutoColumnTextAlign.center,
         textAlign: PlutoColumnTextAlign.center,
-        renderer: (rendererContext){
+        renderer: (rendererContext) {
           return Container(
-            padding: const EdgeInsets.all(4),
+            padding: EdgeInsets.all(4),
             child: Center(
               child: InkWell(
-                onTap: () {
-                  _deleteRow(rendererContext.rowIdx);
-                },
+                onTap: () => _deleteRow(rendererContext.rowIdx),
                 borderRadius: BorderRadius.circular(4),
                 child: Container(
                   padding: const EdgeInsets.all(6),
@@ -700,41 +763,91 @@ class _ItemPlutoGridState extends State<ItemPlutoGrid> {
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(color: Colors.red[300]!),
                   ),
-                  child: Icon(Icons.delete, size: 16, color: Colors.red),
+                  child: const Icon(Icons.delete, size: 16, color: Colors.red),
                 ),
               ),
             ),
           );
         },
       ),
+
     ];
   }
 
   void _deleteRow(int rowIndex) {
-    setState(() {
-      stateManager.removeRows([stateManager.rows[rowIndex]]);
-    });
+    final item = widget.items[rowIndex];
+    final foodDistributionController = Get.find<FoodDistributionController>();
+    final selectedPradesh = foodDistributionController.selectedPradesh.value;
+    final userData = UserStorageHelper.getUserData();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Row $rowIndex deleted'),
-        duration: const Duration(seconds: 2),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: Text(
+            'Are you sure you want to delete "${item.foodGujName}"?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), // ❌ Cancel
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () async {
+                Navigator.pop(context); // close dialog first
+
+                if (selectedPradesh == null || userData?.data?.user == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Missing Pradesh or User Data'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                // ✅ Call delete API
+                final success = await PradeshController.deletePradeshItemData(
+                  pradeshId: selectedPradesh.pradeshId.toString(),
+                  eventId: foodDistributionController.uniqueEvents.first.eventId.toString(),
+                  id: item.Id, // 👈 make sure FoodItem has Id field
+                  personName: userData!.data!.user!.userName.toString(),
+                  personMobile: userData.data!.user!.userMobile.toString(),
+                );
+
+                if (success) {
+                  // 🔄 Refresh from server
+                  await foodDistributionController.loadData();
+                  if (mounted) setState(() {});
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${item.foodEngName} deleted successfully'),
+                      duration: const Duration(seconds: 2),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to delete ${item.foodEngName}'),
+                      duration: const Duration(seconds: 2),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  void _saveQuantity(int rowIndex) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Save quantity for row $rowIndex'),
-        duration: const Duration(seconds: 2),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -865,12 +978,14 @@ class _EditItemDialogState extends State<EditItemDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      backgroundColor: Colors.white,
       title: const Text('Edit Item'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _nameEngController,
+            readOnly: true,
             decoration: const InputDecoration(
               labelText: 'Item Name English',
               border: OutlineInputBorder(),
@@ -879,6 +994,7 @@ class _EditItemDialogState extends State<EditItemDialog> {
           const SizedBox(height: 12),
           TextField(
             controller: _nameGujController,
+            readOnly: true,
             decoration: const InputDecoration(
               labelText: 'Item Name Gujarati',
               border: OutlineInputBorder(),
@@ -896,6 +1012,7 @@ class _EditItemDialogState extends State<EditItemDialog> {
           const SizedBox(height: 12),
           TextField(
             controller: _unitController,
+            readOnly: true,
             decoration: const InputDecoration(
               labelText: 'Unit',
               border: OutlineInputBorder(),
@@ -908,19 +1025,63 @@ class _EditItemDialogState extends State<EditItemDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
+
         ElevatedButton(
-          onPressed: () {
-            final updated = widget.item.copyWith(
+          onPressed: () async {
+            final foodDistributionController = Get.find<FoodDistributionController>();
+            final selectedPradesh = foodDistributionController.selectedPradesh.value;
+            final userData = UserStorageHelper.getUserData();
+
+            if (selectedPradesh == null || userData?.data?.user == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Missing Pradesh or User Data'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              return;
+            }
+
+            // ✅ Call API
+            final success = await PradeshController.updatePradeshItemData(
+              id: widget.item.Id,
+              pradeshId: selectedPradesh.pradeshId.toString(),
+              eventId: foodDistributionController.uniqueEvents.first.eventId.toString(),
+              itemId: widget.item.foodItemId.toString(),
+              quantity: _qtyController.text,
+              pradeshEngName: selectedPradesh.pradeshEngName ?? '',
+              pradeshGujName: selectedPradesh.pradeshGujName ?? '',
               foodEngName: _nameEngController.text,
               foodGujName: _nameGujController.text,
-              totalAssigned: int.tryParse(_qtyController.text) ?? widget.item.totalAssigned,
-              foodUnit: _unitController.text,
+              personName: userData!.data!.user!.userName.toString(),
+              personMobile: userData.data!.user!.userMobile.toString(),
             );
-            widget.onItemUpdated(updated);
+
+            if (success) {
+              // ✅ Refresh only from server (avoid double count)
+              await foodDistributionController.loadData();
+              if (mounted) setState(() {});
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Item updated successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to update item'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+
             Navigator.pop(context);
           },
           child: const Text('Save'),
-        ),
+        )
+
       ],
     );
   }

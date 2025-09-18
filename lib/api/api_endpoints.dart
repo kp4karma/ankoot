@@ -65,5 +65,5 @@ class ApiEndpoints {
   static String get updateData => "${ApiConfig.baseUrl}/updateData/";
   static String get deleteData => "${ApiConfig.baseUrl}/deleteData/";
   static String get savePrasadData => "${ApiConfig.baseUrl}/upsertPrasadStock/";
-
+  static String get assignItemsToPradesh => "${ApiConfig.baseUrl}/copyDefaultStockToFoodStock/";
 }

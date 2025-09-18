@@ -11,6 +11,7 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide Response;
 
 import '../../helper/toast/toast_helper.dart';
+import '../../models/item_master_model.dart';
 import '../../models/user_data_model.dart';
 import '../api_client.dart';
 
@@ -50,6 +51,10 @@ class GeneralService {
   /// Delete Data
   static Future<bool> deleteData(Map<String, dynamic> payload) async {
     return _sendRequest(ApiEndpoints.deleteData, payload, "Delete");
+  }
+
+  static Future<bool> assignToPradesh(Map<String, dynamic> payload) async {
+    return _sendRequest(ApiEndpoints.assignItemsToPradesh, payload, "Assign");
   }
 
   /// Common Request Handler
@@ -184,6 +189,45 @@ class GeneralService {
       }
     } catch (e, stack) {
       print("❌ [Event] Error: $e");
+      print(stack);
+      EasyLoading.showError("Something went wrong: $e");
+      return [];
+    } finally {
+      EasyLoading.dismiss();
+    }
+  }
+
+
+  static Future<List<ItemMasterData>> fetchItemMasterData() async {
+    try {
+      EasyLoading.show(status: "Fetching item master data...");
+
+      final Response response = await ApiClient.post(
+        ApiEndpoints.getData,
+        data: {"table": "foodItems"},
+      );
+
+      print("🔹 [ItemMaster] Status: ${response.statusCode}");
+      print("🔹 [ItemMaster] Response: ${response.data}");
+
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        final itemMasterDataModel =
+        ItemMasterDataModel.fromJson(response.data);
+
+        if (itemMasterDataModel.errorStatus == true) {
+          EasyLoading.showError("Failed to fetch item master data");
+          return [];
+        }
+
+        return itemMasterDataModel.data ?? [];
+      } else {
+        EasyLoading.showError("API Error: ${response.statusMessage}");
+        return [];
+      }
+    } catch (e, stack) {
+      print("❌ [ItemMaster] Error: $e");
       print(stack);
       EasyLoading.showError("Something went wrong: $e");
       return [];

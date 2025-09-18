@@ -91,6 +91,7 @@ class PradeshUser {
 
 class FoodItem {
   final int foodItemId;
+  final int Id;
   final String foodEngName;
   final String foodGujName;
   final String foodUnit;
@@ -103,6 +104,7 @@ class FoodItem {
     required this.foodItemId,
     required this.foodEngName,
     required this.foodGujName,
+    required this.Id,
     required this.foodUnit,
     required this.foodCategory,
     required this.totalQty,
@@ -115,6 +117,7 @@ class FoodItem {
       foodItemId: json['food_item_id'] ?? 0,
       foodEngName: json['food_eng_name'] ?? '',
       foodGujName: json['food_guj_name'] ?? '',
+      Id: json['id'] ?? '',
       foodUnit: json['food_unit'] ?? '',
       foodCategory: json['food_category'] ?? '',
       totalQty: json['total_qty'] ?? 0,
@@ -128,6 +131,7 @@ class FoodItem {
       'food_item_id': foodItemId,
       'food_eng_name': foodEngName,
       'food_guj_name': foodGujName,
+      'id': Id,
       'food_unit': foodUnit,
       'food_category': foodCategory,
       'total_qty': totalQty,
@@ -138,6 +142,7 @@ class FoodItem {
 
   FoodItem copyWith({
     int? foodItemId,
+    int? Id,
     String? foodEngName,
     String? foodGujName,
     String? foodUnit,
@@ -148,6 +153,7 @@ class FoodItem {
   }) {
     return FoodItem(
       foodItemId: foodItemId ?? this.foodItemId,
+      Id: foodItemId ?? this.Id,
       foodEngName: foodEngName ?? this.foodEngName,
       foodGujName: foodGujName ?? this.foodGujName,
       foodUnit: foodUnit ?? this.foodUnit,

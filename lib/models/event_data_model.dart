@@ -33,6 +33,7 @@ class Data {
   String? eventDate;
   String? eventItemLastDate;
   bool? isPrasadActive;
+  bool? isMessage;
   String? status;
   String? cdt;
   String? udt;
@@ -46,6 +47,7 @@ class Data {
         this.eventDate,
         this.eventItemLastDate,
         this.isPrasadActive,
+        this.isMessage,
         this.status,
         this.cdt,
         this.udt});
@@ -60,6 +62,7 @@ class Data {
     eventItemLastDate = json['event_item_last_date'];
     isPrasadActive = json['is_prasad_active'];
     status = json['status'];
+    isMessage = json['is_message'];
     cdt = json['cdt'];
     udt = json['udt'];
   }
@@ -74,6 +77,7 @@ class Data {
     data['event_date'] = this.eventDate;
     data['event_item_last_date'] = this.eventItemLastDate;
     data['is_prasad_active'] = this.isPrasadActive;
+    data['is_message'] = this.isMessage;
     data['status'] = this.status;
     data['cdt'] = this.cdt;
     data['udt'] = this.udt;
