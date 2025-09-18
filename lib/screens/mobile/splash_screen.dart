@@ -1,4 +1,5 @@
 import 'package:ankoot_new/screens/main_screen.dart';
+import 'package:ankoot_new/screens/mobile/login_screen.dart';
 import 'package:ankoot_new/screens/mobile/mobile_admin_home_screen.dart';
 import 'package:ankoot_new/screens/mobile/mobile_home_screen.dart';
 import 'package:ankoot_new/theme/storage_helper.dart';
@@ -107,23 +108,33 @@ class _SplashScreenState extends State<SplashScreen>
     // Navigate to main screen
     if (mounted) {
 
+
       if(kIsWeb){
+
         Navigator.pushReplacement(
           context,
           CupertinoPageRoute(builder: (context) => MainScreen()),
         );
       }else{
-        if(false && UserStorageHelper.getUserData()?.data?.user?.userType.toString().toLowerCase() == "admin" ){
-          Navigator.pushReplacement(
-            context,
-            CupertinoPageRoute(builder: (context) => MobileAdminHomeScreen()),
-          );
+        if(UserStorageHelper.getUserData()?.data?.user?.userType != null){
+          if( UserStorageHelper.getUserData()?.data?.user?.userType.toString().toLowerCase() == "admin" ){
+            Navigator.pushReplacement(
+              context,
+              CupertinoPageRoute(builder: (context) => MobileAdminHomeScreen()),
+            );
+          }else{
+            Navigator.pushReplacement(
+              context,
+              CupertinoPageRoute(builder: (context) => MobileHomeScreen()),
+            );
+          }
         }else{
           Navigator.pushReplacement(
             context,
-            CupertinoPageRoute(builder: (context) => MobileHomeScreen()),
+            CupertinoPageRoute(builder: (context) => LoginScreen()),
           );
         }
+
       }
 
     }
@@ -151,10 +162,9 @@ class _SplashScreenState extends State<SplashScreen>
               Colors.deepOrange.shade200, // Light deep orange
               Colors.deepOrange.shade300,
               Colors.deepOrange.shade400,
-              Colors.deepOrange.shade500,
-              Colors.deepOrange.shade600, // Deeper orange
+
             ],
-            stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
+            stops: const [0.0, 0.25, 0.5, ],
           ),
         ),
         child: SafeArea(
@@ -170,8 +180,8 @@ class _SplashScreenState extends State<SplashScreen>
                     child: FadeTransition(
                       opacity: _fadeAnimation,
                       child: Container(
-                        width: 120,
-                        height: 120,
+                        width: MediaQuery.of(context).size.width * 0.40,
+                        height: MediaQuery.of(context).size.width * 0.40,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
@@ -183,11 +193,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ],
                         ),
-                        child: Icon(
-                          Icons.restaurant_menu,
-                          size: 60,
-                          color: Colors.deepOrange.shade600,
-                        ),
+                        child: Image.asset("assets/hpprasadm.png"),
                       ),
                     ),
                   );

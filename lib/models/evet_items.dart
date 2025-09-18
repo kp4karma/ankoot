@@ -158,7 +158,6 @@ class FoodItem {
     );
   }
 
-
   // Get formatted display name
   String getDisplayName({bool isGujarati = false}) {
     return isGujarati ? foodGujName : foodEngName;
@@ -196,6 +195,7 @@ class Event {
   final String eventName;
   final String status;
   final String eventData;
+  PrasadStock? prasadStock = PrasadStock();
   final List<FoodItem> items;
   final int totalItemsCount;
 
@@ -205,18 +205,25 @@ class Event {
     required this.items,
     required this.eventData,
     required this.status,
+    required this.prasadStock,
     required this.totalItemsCount,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
+
     return Event(
       eventId: json['event_id'] ?? 0,
       eventName: json['event_name'] ?? '',
       status: json['status'] ?? '',
       eventData: json['event_date'] ?? '',
-      items: (json['items'] as List<dynamic>?)
-          ?.map((item) => FoodItem.fromJson(item))
-          .toList() ?? [],
+      prasadStock: json['prasadStock'] != null
+          ? new PrasadStock.fromJson(json['prasadStock'])
+          : null,
+      items:
+          (json['items'] as List<dynamic>?)
+              ?.map((item) => FoodItem.fromJson(item))
+              .toList() ??
+          [],
       totalItemsCount: json['total_items_count'] ?? 0,
     );
   }
@@ -226,6 +233,8 @@ class Event {
       'event_id': eventId,
       'event_name': eventName,
       'status': status,
+      'event_date': eventData, // ✅ added
+      'prasadStock': prasadStock?.toJson(), // ✅ added
       'items': items.map((item) => item.toJson()).toList(),
       'total_items_count': totalItemsCount,
     };
@@ -263,10 +272,13 @@ class Event {
   // Find items by name (supports both English and Gujarati)
   List<FoodItem> findItemsByName(String searchName) {
     final lowerSearch = searchName.toLowerCase();
-    return items.where((item) =>
-    item.foodEngName.toLowerCase().contains(lowerSearch) ||
-        item.foodGujName.toLowerCase().contains(lowerSearch)
-    ).toList();
+    return items
+        .where(
+          (item) =>
+              item.foodEngName.toLowerCase().contains(lowerSearch) ||
+              item.foodGujName.toLowerCase().contains(lowerSearch),
+        )
+        .toList();
   }
 
   @override
@@ -275,14 +287,13 @@ class Event {
   }
 }
 
-  class Pradesh {
+class Pradesh {
   final int pradeshId;
   final String pradeshEngName;
   final String pradeshGujName;
   final String status;
   final List<Event> events;
   final List<PradeshUser> pradeshUsers;
-
 
   Pradesh({
     required this.pradeshId,
@@ -299,12 +310,16 @@ class Event {
       pradeshEngName: (json['pradesh_eng_name'] ?? '').toString().trim(),
       pradeshGujName: json['pradesh_guj_name'] ?? '',
       status: json['status'] ?? '',
-      pradeshUsers: (json['pradeshUsers'] as List<dynamic>?)
-          ?.map((user) => PradeshUser.fromJson(user))
-          .toList() ?? [],
-      events: (json['events'] as List<dynamic>?)
-          ?.map((event) => Event.fromJson(event))
-          .toList() ?? [],
+      pradeshUsers:
+          (json['pradeshUsers'] as List<dynamic>?)
+              ?.map((user) => PradeshUser.fromJson(user))
+              .toList() ??
+          [],
+      events:
+          (json['events'] as List<dynamic>?)
+              ?.map((event) => Event.fromJson(event))
+              .toList() ??
+          [],
     );
   }
 
@@ -389,9 +404,11 @@ class FoodDistributionResponse {
       errorStatus: json['errorStatus'] ?? false,
       msg: data['msg'] ?? '',
       count: data['count'] ?? 0,
-      pradeshs: (data['data'] as List<dynamic>?)
-          ?.map((pradesh) => Pradesh.fromJson(pradesh))
-          .toList() ?? [],
+      pradeshs:
+          (data['data'] as List<dynamic>?)
+              ?.map((pradesh) => Pradesh.fromJson(pradesh))
+              .toList() ??
+          [],
     );
   }
 
@@ -424,9 +441,10 @@ class FoodDistributionResponse {
   Pradesh? findPradeshByName(String name) {
     final lowerName = name.toLowerCase();
     try {
-      return pradeshs.firstWhere((pradesh) =>
-      pradesh.pradeshEngName.toLowerCase().contains(lowerName) ||
-          pradesh.pradeshGujName.toLowerCase().contains(lowerName)
+      return pradeshs.firstWhere(
+        (pradesh) =>
+            pradesh.pradeshEngName.toLowerCase().contains(lowerName) ||
+            pradesh.pradeshGujName.toLowerCase().contains(lowerName),
       );
     } catch (e) {
       return null;
@@ -441,7 +459,6 @@ class FoodDistributionResponse {
 
 // Helper Functions
 class FoodDistributionHelper {
-
   // Extract all unique events from the data
   static List<Event> extractUniqueEvents(FoodDistributionResponse response) {
     final Map<int, Event> uniqueEvents = {};
@@ -459,9 +476,9 @@ class FoodDistributionHelper {
 
   // Extract all unique pradeshs (active only by default)
   static List<Pradesh> extractUniquePradeshs(
-      FoodDistributionResponse response, {
-        bool activeOnly = true,
-      }) {
+    FoodDistributionResponse response, {
+    bool activeOnly = true,
+  }) {
     if (activeOnly) {
       return response.activePradeshs;
     }
@@ -469,7 +486,9 @@ class FoodDistributionHelper {
   }
 
   // Get all unique food items across all pradeshs and events
-  static List<FoodItem> extractAllUniqueFoodItems(FoodDistributionResponse response) {
+  static List<FoodItem> extractAllUniqueFoodItems(
+    FoodDistributionResponse response,
+  ) {
     final Map<int, FoodItem> uniqueItems = {};
 
     for (var pradesh in response.pradeshs) {
@@ -487,16 +506,18 @@ class FoodDistributionHelper {
 
   // Get food items by category across all data
   static List<FoodItem> getFoodItemsByCategory(
-      FoodDistributionResponse response,
-      String category,
-      ) {
-    return extractAllUniqueFoodItems(response)
-        .where((item) => item.foodCategory == category)
-        .toList();
+    FoodDistributionResponse response,
+    String category,
+  ) {
+    return extractAllUniqueFoodItems(
+      response,
+    ).where((item) => item.foodCategory == category).toList();
   }
 
   // Get all unique categories
-  static List<String> extractUniqueCategories(FoodDistributionResponse response) {
+  static List<String> extractUniqueCategories(
+    FoodDistributionResponse response,
+  ) {
     final Set<String> categories = {};
 
     for (var item in extractAllUniqueFoodItems(response)) {
@@ -507,11 +528,18 @@ class FoodDistributionHelper {
   }
 
   // Get summary statistics
-  static Map<String, dynamic> getSummaryStatistics(FoodDistributionResponse response) {
+  static Map<String, dynamic> getSummaryStatistics(
+    FoodDistributionResponse response,
+  ) {
     final allItems = extractAllUniqueFoodItems(response);
-    final totalAssigned = allItems.fold(0, (sum, item) => sum + item.totalAssigned);
+    final totalAssigned = allItems.fold(
+      0,
+      (sum, item) => sum + item.totalAssigned,
+    );
     final totalAvailable = allItems.fold(0, (sum, item) => sum + item.totalQty);
-    final itemsWithShortage = allItems.where((item) => !item.hasSufficientStock).length;
+    final itemsWithShortage = allItems
+        .where((item) => !item.hasSufficientStock)
+        .length;
 
     return {
       'totalPradeshs': response.pradeshs.length,
@@ -521,21 +549,90 @@ class FoodDistributionHelper {
       'totalAssignedQuantity': totalAssigned,
       'totalAvailableQuantity': totalAvailable,
       'itemsWithShortage': itemsWithShortage,
-      'shortagePercentage': allItems.isEmpty ? 0.0 : (itemsWithShortage / allItems.length) * 100,
+      'shortagePercentage': allItems.isEmpty
+          ? 0.0
+          : (itemsWithShortage / allItems.length) * 100,
     };
   }
 
   // Search items across all data
   static List<FoodItem> searchItems(
-      FoodDistributionResponse response,
-      String searchTerm,
-      ) {
+    FoodDistributionResponse response,
+    String searchTerm,
+  ) {
     final lowerSearch = searchTerm.toLowerCase();
     return extractAllUniqueFoodItems(response)
-        .where((item) =>
-    item.foodEngName.toLowerCase().contains(lowerSearch) ||
-        item.foodGujName.toLowerCase().contains(lowerSearch)
-    )
+        .where(
+          (item) =>
+              item.foodEngName.toLowerCase().contains(lowerSearch) ||
+              item.foodGujName.toLowerCase().contains(lowerSearch),
+        )
         .toList();
+  }
+}
+
+class PrasadStock {
+  int? id;
+  int? eventId;
+  int? pradeshId;
+  String? prasadBoxQty;
+  int? deliverBoxQty;
+  int? deliverPacketQty;
+  String? prasadPacketQty;
+  String? personMobile;
+  String? personName;
+  int? userId;
+  String? status;
+  String? cdt;
+  String? udt;
+
+  PrasadStock({
+    this.id,
+    this.eventId,
+    this.pradeshId,
+    this.prasadBoxQty,
+    this.deliverBoxQty,
+    this.deliverPacketQty,
+    this.prasadPacketQty,
+    this.personMobile,
+    this.personName,
+    this.userId,
+    this.status,
+    this.cdt,
+    this.udt,
+  });
+
+  PrasadStock.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    eventId = json['event_id'];
+    pradeshId = json['pradesh_id'];
+    prasadBoxQty = json['prasad_box_qty'];
+    deliverBoxQty = json['deliver_box_qty'];
+    deliverPacketQty = json['deliver_packet_qty'];
+    prasadPacketQty = json['prasad_packet_qty'];
+    personMobile = json['person_mobile'];
+    personName = json['person_name'];
+    userId = json['user_id'];
+    status = json['status'];
+    cdt = json['cdt'];
+    udt = json['udt'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['event_id'] = this.eventId;
+    data['pradesh_id'] = this.pradeshId;
+    data['prasad_box_qty'] = this.prasadBoxQty;
+    data['deliver_box_qty'] = this.deliverBoxQty;
+    data['deliver_packet_qty'] = this.deliverPacketQty;
+    data['prasad_packet_qty'] = this.prasadPacketQty;
+    data['person_mobile'] = this.personMobile;
+    data['person_name'] = this.personName;
+    data['user_id'] = this.userId;
+    data['status'] = this.status;
+    data['cdt'] = this.cdt;
+    data['udt'] = this.udt;
+    return data;
   }
 }

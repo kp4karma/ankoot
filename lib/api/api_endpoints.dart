@@ -15,12 +15,9 @@ class ApiConfig {
   static String get protocol => useHttps ? "https" : "http";
 
   static const _devApiDomain = "27.116.52.24:8165";
+  // static const _devApiDomain = "192.168.201.157:3690";
   static const _profileApiDomain = "";
   static const _prodApiDomain = "";
-
-  // static const _devMediaCdn = "cdn.softample.com";
-  // static const _profileMediaCdn = "cdn.softample.com";
-  // static const _prodMediaCdn = "cdn.softample.com";
 
   static const String companyId = "";
   static const String fernetKey = "";

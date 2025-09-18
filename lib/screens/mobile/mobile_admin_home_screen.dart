@@ -222,10 +222,12 @@ if (_searchQuery.isEmpty) {
                                                   eventName: "",
                                                   items: [],
                                                   status: "",
+                                                  prasadStock: PrasadStock(),
                                                   totalItemsCount: 0,
                                                 ),
                                               );
 
+                                              print("dedeedede");
                                               if (selectedEvent.items.isEmpty) {
                                                 return Padding(
                                                   padding: const EdgeInsets.all(

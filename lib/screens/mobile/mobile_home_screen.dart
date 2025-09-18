@@ -1,4 +1,3 @@
-
 import 'package:ankoot_new/controller/event_controller.dart';
 import 'package:ankoot_new/controller/food_distribution_controller.dart';
 import 'package:ankoot_new/models/evet_items.dart';
@@ -17,6 +16,7 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'dart:io';
 import 'package:get/get.dart';
+
 class MobileHomeScreen extends StatefulWidget {
   const MobileHomeScreen({Key? key}) : super(key: key);
 
@@ -43,17 +43,18 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
   @override
   void initState() {
     super.initState();
-    if(foodDistributionController.uniqueEvents.length >0){
-      foodDistributionController.selectedEventIndex.value = foodDistributionController.uniqueEvents[0].eventId;
+    if (foodDistributionController.uniqueEvents.length > 0) {
+      foodDistributionController.selectedEventIndex.value =
+          foodDistributionController.uniqueEvents[0].eventId;
     }
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text;
         _filterPradeshs();
-        if(foodDistributionController.uniqueEvents.length >0){
-          foodDistributionController.selectedEventIndex.value = foodDistributionController.uniqueEvents[0].eventId;
+        if (foodDistributionController.uniqueEvents.length > 0) {
+          foodDistributionController.selectedEventIndex.value =
+              foodDistributionController.uniqueEvents[0].eventId;
         }
-
       });
     });
   }
@@ -68,9 +69,7 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-
-    return  GestureDetector(
+    return GestureDetector(
       onTap: () {
         FocusManager.instance.primaryFocus?.unfocus();
       },
@@ -78,15 +77,14 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
         appBar: _buildAppBar(),
         body: SingleChildScrollView(
           child: Obx(() {
-            if(_filteredPradeshs.length ==0){
+            if (_filteredPradeshs.length == 0) {
               _filterPradeshs();
             }
 
-            return  Column(
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // MobileUserHeader(user: currentUser, onContactTap: _onContactTap),
-
                 _buildEventChipsRow(),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -104,360 +102,404 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
                         padding: EdgeInsets.all(0),
                         child: ListView.builder(
                           primary: false,
-                          padding: EdgeInsets.symmetric(horizontal: 0,vertical: 0),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 0,
+                            vertical: 0,
+                          ),
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           itemCount: _filteredPradeshs.length,
                           itemBuilder: (context, index) {
                             _cardKeys.add(GlobalKey());
                             Pradesh pradesh = _filteredPradeshs[index];
-                            return Card(
-                              margin: EdgeInsets.zero,
-                              elevation: 0,
-                              shadowColor: Colors.deepOrange.withAlpha(30),
-                              color: Colors.white,
-                              child: Column(
-                                children: [
-                                  if(pradesh.events
-                                      .singleWhere(
-                                        (element) =>
-                                    element.eventId ==
-                                        foodDistributionController.selectedEventIndex.value,
-                                    orElse: () => Event(
-                                      eventId: 0,
-                                      eventName: "",
-                                      items: [],  eventData: DateTime.now().toString(),
-                                      status: "",
-                                      totalItemsCount: 0,
-                                    ),
-                                  ).eventName != "")
-                                    ...[ Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            "${pradesh.events
-                                                .singleWhere(
-                                                  (element) =>
-                                              element.eventId ==
-                                                  foodDistributionController.selectedEventIndex.value,
-                                              orElse: () => Event(
-                                                eventId: 0,
-                                                eventData: DateTime.now().toString(),
-                                                eventName: "",
-                                                items: [],
-                                                status: "",
-                                                totalItemsCount: 0,
-                                              ),
-                                            ).eventName}",
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.deepOrange,
-                                            ),
-                                          ),
-                                          Text(
-                                            "Event Date: ${DateFormat("dd-MM-yyyy").format(DateTime.parse(pradesh.events
-                                                .singleWhere(
-                                                  (element) =>
-                                              element.eventId ==
-                                                  foodDistributionController.selectedEventIndex.value,
-                                              orElse: () => Event(
-                                                eventId: 0,
-                                                eventName: "",
-                                                items: [],  eventData: DateTime.now().toString(),
-                                                status: "",
-                                                totalItemsCount: 0,
-                                              ),
-                                            ).eventData))}",
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                      Divider(height: 0,),],
-                                  RepaintBoundary(
-                                    key: _cardKeys[index],
-                                    child: Card(
-                                      elevation: 0,
-                                      shadowColor: Colors.black.withAlpha(30),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      color: Colors.white,
-                                      margin: EdgeInsets.zero,
-                                      child: Padding(
-                                        padding: EdgeInsets.all(0),
-                                        child:           Builder(
-                                          builder: (context) {
-                                            final selectedEvent = pradesh.events
-                                                .singleWhere(
-                                                  (element) =>
-                                              element.eventId ==
-                                                  foodDistributionController.selectedEventIndex.value,
-                                              orElse: () => Event(
-                                                eventData: DateTime.now().toString(),
-                                                eventId: 0,
-                                                eventName: "",
-                                                items: [],
-                                                status: "",
-                                                totalItemsCount: 0,
-                                              ),
-                                            );
 
-                                            if (selectedEvent.items.isEmpty) {
-                                              return Padding(
-                                                padding: const EdgeInsets.all(
-                                                  8.0,
+                            return Column(
+                              children: [
+                                Card(
+                                  margin: EdgeInsets.zero,
+                                  elevation: 0,
+                                  shadowColor: Colors.deepOrange.withAlpha(30),
+                                  color: Colors.white,
+                                  child: Column(
+                                    children: [
+                                      if (pradesh.events
+                                              .singleWhere(
+                                                (element) =>
+                                                    element.eventId ==
+                                                    foodDistributionController
+                                                        .selectedEventIndex
+                                                        .value,
+                                                orElse: () => Event(
+                                                  eventId: 0,
+                                                  eventName: "",
+                                                  prasadStock: PrasadStock(),
+                                                  items: [],
+                                                  eventData: DateTime.now()
+                                                      .toString(),
+                                                  status: "",
+                                                  totalItemsCount: 0,
                                                 ),
-                                                child: Center(
-                                                  child: Text(
-                                                    "No Food Items found",
-                                                    style: TextStyle(
-                                                      fontSize: 16,
-                                                      color: Colors.brown,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
+                                              )
+                                              .eventName !=
+                                          "") ...[
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                "${pradesh.events.singleWhere(
+                                                  (element) => element.eventId == foodDistributionController.selectedEventIndex.value,
+                                                  orElse: () => Event(eventId: 0, eventData: DateTime.now().toString(), eventName: "", items: [], status: "", prasadStock: PrasadStock(), totalItemsCount: 0),
+                                                ).eventName}",
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.deepOrange,
                                                 ),
-                                              );
-                                            }
-
-                                            return Column(
-                                              children: [
-                                                SizedBox(height: 8),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                                  children: [
-                                                    Flexible(
-                                                      fit: FlexFit.tight,
-                                                      flex: 1,
-                                                      child: Text(
-                                                        "Sr.",
-                                                        textAlign:
-                                                        TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Flexible(
-                                                      fit: FlexFit.tight,
-                                                      flex: 3,
-                                                      child: Text(
-                                                        "Item Name",
-                                                        textAlign: TextAlign.left,
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Flexible(
-                                                      fit: FlexFit.tight,
-                                                      flex: 1,
-                                                      child: Text(
-                                                        "Qty",
-                                                        textAlign:
-                                                        TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    if(foodDistributionController.isShowLeftQty.value == false)
-                                                      Flexible(
-                                                        fit: FlexFit.tight,
-                                                        flex: 2,
-                                                        child: Text(
-                                                          "Left Qty",
-                                                          textAlign:
-                                                          TextAlign.center,
-                                                          style: TextStyle(
-                                                            fontSize: 16,
-                                                            color: Colors.black,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    Flexible(
-                                                      fit: FlexFit.tight,
-                                                      flex: 1,
-                                                      child: Text(
-                                                        "Unit",
-                                                        textAlign:
-                                                        TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
+                                              ),
+                                              Text(
+                                                "Event Date: ${DateFormat("dd-MM-yyyy").format(DateTime.parse(pradesh.events.singleWhere(
+                                                  (element) => element.eventId == foodDistributionController.selectedEventIndex.value,
+                                                  orElse: () => Event(eventId: 0, eventName: "", items: [], eventData: DateTime.now().toString(), status: "", prasadStock: PrasadStock(), totalItemsCount: 0),
+                                                ).eventData))}",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
                                                 ),
-                                                Divider(),
-                                                ListView.builder(
-                                                  primary: false,
-                                                  padding: EdgeInsets.zero,
-                                                  shrinkWrap: true,
-                                                  itemCount:
-                                                  selectedEvent.items.length,
-                                                  itemBuilder: (context, itemIndex) {
-                                                    FoodItem foodItem =
-                                                    selectedEvent
-                                                        .items[itemIndex];
-                                                    return Padding(
-                                                      padding:
-                                                      const EdgeInsets.symmetric(
-                                                        vertical: 4.0,
-                                                      ),
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                        children: [
-                                                          Flexible(
-                                                            fit: FlexFit.tight,
-                                                            flex: 1,
-                                                            child: Text(
-                                                              "${itemIndex + 1}",
-                                                              textAlign: TextAlign
-                                                                  .center,
-                                                              style: TextStyle(
-                                                                fontSize: 16,
-                                                                color:
-                                                                Colors.black,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Flexible(
-                                                            fit: FlexFit.tight,
-                                                            flex: 3,
-                                                            child: Text(
-                                                              "${foodItem.foodEngName}",
-                                                              textAlign:
-                                                              TextAlign.left,
-                                                              style: TextStyle(
-                                                                fontSize: 16,
-                                                                color:
-                                                                Colors.black,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Flexible(
-                                                            fit: FlexFit.tight,
-                                                            flex: 1,
-                                                            child: Text(
-                                                              "${foodItem.totalAssigned}",
-                                                              textAlign: TextAlign
-                                                                  .center,
-                                                              style: TextStyle(
-                                                                fontSize: 16,
-                                                                color:
-                                                                Colors.black,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          if(foodDistributionController.isShowLeftQty.value == false)
-                                                            Flexible(
-                                                              fit: FlexFit.tight,
-                                                              flex: 2,
-                                                              child: Text(
-                                                                "${foodItem.totalQty}",
-                                                                textAlign: TextAlign
-                                                                    .center,
-                                                                style: TextStyle(
-                                                                  fontSize: 16,
-                                                                  color:
-                                                                  Colors.black,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          Flexible(
-                                                            fit: FlexFit.tight,
-                                                            flex: 1,
-                                                            child: Text(
-                                                              "${foodItem.foodUnit}",
-                                                              textAlign: TextAlign
-                                                                  .center,
-                                                              style: TextStyle(
-                                                                fontSize: 16,
-                                                                color:
-                                                                Colors.black,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Divider(height: 0),
+                                      ],
+                                      RepaintBoundary(
+                                        key: _cardKeys[index],
+                                        child: Card(
+                                          elevation: 0,
+                                          shadowColor: Colors.black.withAlpha(30),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          color: Colors.white,
+                                          margin: EdgeInsets.zero,
+                                          child: Padding(
+                                            padding: EdgeInsets.all(0),
+                                            child: Builder(
+                                              builder: (context) {
+                                                final selectedEvent = pradesh.events
+                                                    .singleWhere(
+                                                      (element) =>
+                                                          element.eventId ==
+                                                          foodDistributionController
+                                                              .selectedEventIndex
+                                                              .value,
+                                                      orElse: () => Event(
+                                                        eventData: DateTime.now()
+                                                            .toString(),
+                                                        eventId: 0,
+                                                        eventName: "",
+                                                        prasadStock: PrasadStock(),
+                                                        items: [],
+                                                        status: "",
+                                                        totalItemsCount: 0,
                                                       ),
                                                     );
-                                                  },
-                                                ),
-
-                                                if (selectedEvent.status
-                                                    .toString() ==
-                                                    "active") ...[
-                                                  Divider(),
-                                                  Padding(
-                                                    padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 8.0,
+                                                print("dsdddddddees ${selectedEvent.prasadStock?.id}");
+                                                if (selectedEvent.items.isEmpty) {
+                                                  return Padding(
+                                                    padding: const EdgeInsets.all(
+                                                      8.0,
                                                     ),
-                                                    child: Column(
-                                                      children: [
-                                                        Row(
-                                                          mainAxisAlignment:
+                                                    child: Center(
+                                                      child: Text(
+                                                        "No Food Items found",
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          color: Colors.brown,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+
+                                                return Column(
+                                                  children: [
+                                                    SizedBox(height: 8),
+                                                    Row(
+                                                      mainAxisAlignment:
                                                           MainAxisAlignment
                                                               .spaceBetween,
-                                                          children: [
-                                                            Expanded(
-                                                              child: Text(
-                                                                "નોધ:- તા. 23-09-2025. સુધી માં AVD મંદિર એ મોકલી આપવું.",
-                                                                style: TextStyle(
-                                                                  fontSize: 16,
-                                                                  color:
-                                                                  Colors.red,
-                                                                  fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                                ),
+                                                      children: [
+                                                        Flexible(
+                                                          fit: FlexFit.tight,
+                                                          flex: 1,
+                                                          child: Text(
+                                                            "Sr.",
+                                                            textAlign:
+                                                                TextAlign.center,
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                              color: Colors.black,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Flexible(
+                                                          fit: FlexFit.tight,
+                                                          flex: 3,
+                                                          child: Text(
+                                                            "Item Name",
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                              color: Colors.black,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Flexible(
+                                                          fit: FlexFit.tight,
+                                                          flex: 1,
+                                                          child: Text(
+                                                            "Qty",
+                                                            textAlign:
+                                                                TextAlign.center,
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                              color: Colors.black,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        if (foodDistributionController
+                                                                .isShowLeftQty
+                                                                .value ==
+                                                            false)
+                                                          Flexible(
+                                                            fit: FlexFit.tight,
+                                                            flex: 2,
+                                                            child: Text(
+                                                              "Left Qty",
+                                                              textAlign:
+                                                                  TextAlign.center,
+                                                              style: TextStyle(
+                                                                fontSize: 16,
+                                                                color: Colors.black,
                                                               ),
                                                             ),
-                                                          ],
+                                                          ),
+                                                        Flexible(
+                                                          fit: FlexFit.tight,
+                                                          flex: 1,
+                                                          child: Text(
+                                                            "Unit",
+                                                            textAlign:
+                                                                TextAlign.center,
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                              color: Colors.black,
+                                                            ),
+                                                          ),
                                                         ),
                                                       ],
                                                     ),
-                                                  ),
-                                                  if (foodDistributionController
-                                                      .isShowLeftQty
-                                                      .value ==
-                                                      false)
-                                                    Padding(
-                                                      padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 8.0,
-                                                      ),
-                                                      child: _buildActionButtons(
-                                                          index,
-                                                          pradeshName:  pradesh.pradeshGujName,pradeshId: pradesh.pradeshId.toString(),eventId: selectedEvent.eventId.toString()
-                                                      ),
+                                                    Divider(),
+                                                    ListView.builder(
+                                                      primary: false,
+                                                      padding: EdgeInsets.zero,
+                                                      shrinkWrap: true,
+                                                      itemCount: selectedEvent
+                                                          .items
+                                                          .length,
+                                                      itemBuilder: (context, itemIndex) {
+                                                        FoodItem foodItem =
+                                                            selectedEvent
+                                                                .items[itemIndex];
+                                                        return Padding(
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                vertical: 4.0,
+                                                              ),
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              Flexible(
+                                                                fit: FlexFit.tight,
+                                                                flex: 1,
+                                                                child: Text(
+                                                                  "${itemIndex + 1}",
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style: TextStyle(
+                                                                    fontSize: 16,
+                                                                    color: Colors
+                                                                        .black,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              Flexible(
+                                                                fit: FlexFit.tight,
+                                                                flex: 3,
+                                                                child: Text(
+                                                                  "${foodItem.foodEngName}",
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .left,
+                                                                  style: TextStyle(
+                                                                    fontSize: 16,
+                                                                    color: Colors
+                                                                        .black,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              Flexible(
+                                                                fit: FlexFit.tight,
+                                                                flex: 1,
+                                                                child: Text(
+                                                                  "${foodItem.totalAssigned}",
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style: TextStyle(
+                                                                    fontSize: 16,
+                                                                    color: Colors
+                                                                        .black,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              if (foodDistributionController
+                                                                      .isShowLeftQty
+                                                                      .value ==
+                                                                  false)
+                                                                Flexible(
+                                                                  fit:
+                                                                      FlexFit.tight,
+                                                                  flex: 2,
+                                                                  child: Text(
+                                                                    "${foodItem.totalQty}",
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .center,
+                                                                    style: TextStyle(
+                                                                      fontSize: 16,
+                                                                      color: Colors
+                                                                          .black,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              Flexible(
+                                                                fit: FlexFit.tight,
+                                                                flex: 1,
+                                                                child: Text(
+                                                                  "${foodItem.foodUnit}",
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style: TextStyle(
+                                                                    fontSize: 16,
+                                                                    color: Colors
+                                                                        .black,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      },
                                                     ),
-                                                ],
-                                              ],
-                                            );
-                                          },
+
+                                                    if (selectedEvent.status
+                                                            .toString() ==
+                                                        "active") ...[
+                                                      Divider(),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 8.0,
+                                                            ),
+                                                        child: Column(
+                                                          children: [
+                                                            Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    "નોધ:- તા. 23-09-2025. સુધી માં AVD મંદિર એ મોકલી આપવું.",
+                                                                    style: TextStyle(
+                                                                      fontSize: 16,
+                                                                      color: Colors
+                                                                          .red,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      if (foodDistributionController
+                                                              .isShowLeftQty
+                                                              .value ==
+                                                          false)
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                horizontal: 8.0,
+                                                              ),
+                                                          child:
+                                                              _buildActionButtons(
+                                                                index,
+                                                                pradeshName: pradesh
+                                                                    .pradeshGujName,
+                                                                pradeshId: pradesh
+                                                                    .pradeshId
+                                                                    .toString(),
+                                                                eventId:
+                                                                    selectedEvent
+                                                                        .eventId
+                                                                        .toString(),
+                                                              ),
+                                                        ),
+                                                    ],
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+
+                                PrasadamWidget(prasadStock: pradesh.events
+                                    .singleWhere(
+                                      (element) =>
+                                  element.eventId ==
+                                      foodDistributionController
+                                          .selectedEventIndex
+                                          .value,
+                                  orElse: () => Event(
+                                    eventData: DateTime.now()
+                                        .toString(),
+                                    eventId: 0,
+                                    eventName: "",
+                                    prasadStock: PrasadStock(),
+                                    items: [],
+                                    status: "",
+                                    totalItemsCount: 0,
+                                  ),
+                                ).prasadStock??PrasadStock()),
+                              ],
                             );
                           },
                         ),
@@ -466,8 +508,8 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
                   ),
                 ),
 
-                PrasadamWidget(),
-                SizedBox(height: kBottomNavigationBarHeight,),
+
+                SizedBox(height: kBottomNavigationBarHeight),
               ],
             );
           }),
@@ -487,11 +529,11 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
           itemBuilder: (context, index) {
             final isSelected =
                 foodDistributionController.uniqueEvents[index].eventId ==
-                    foodDistributionController.selectedEventIndex.value;
+                foodDistributionController.selectedEventIndex.value;
             return Padding(
               padding: EdgeInsets.only(
                 right:
-                index < foodDistributionController.uniqueEvents.length - 1
+                    index < foodDistributionController.uniqueEvents.length - 1
                     ? 8
                     : 0,
               ),
@@ -521,12 +563,12 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
                     ),
                     boxShadow: isSelected
                         ? [
-                      BoxShadow(
-                        color: Colors.deepOrange.withAlpha(30),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ]
+                            BoxShadow(
+                              color: Colors.deepOrange.withAlpha(30),
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ]
                         : null,
                   ),
                   child: Center(
@@ -555,44 +597,61 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
       _filteredPradeshs = foodDistributionController.uniquePradeshs.toList();
     } else {
       _filteredPradeshs = foodDistributionController.uniquePradeshs.where((
-          pradesh,
-          ) {
+        pradesh,
+      ) {
         // Search by pradesh name
         final pradeshNameMatch =
-        (pradesh.pradeshEngName.toLowerCase().contains(
+            (pradesh.pradeshEngName.toLowerCase().contains(
               _searchQuery.toLowerCase(),
             ) ||
-                pradesh.pradeshGujName.toLowerCase().contains(
-                  _searchQuery.toLowerCase(),
-                ));
+            pradesh.pradeshGujName.toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            ));
 
         // Search by food items in selected event
         final itemsMatch = pradesh.events
-            .where((event) => event.eventId == foodDistributionController.selectedEventIndex.value)
+            .where(
+              (event) =>
+                  event.eventId ==
+                  foodDistributionController.selectedEventIndex.value,
+            )
             .expand((event) => event.items)
             .any(
               (item) =>
-          item.foodEngName.toLowerCase().contains(
-            _searchQuery.toLowerCase(),
-          ) ||
-              item.foodGujName.toLowerCase().contains(
-                _searchQuery.toLowerCase(),
-              ),
-        );
+                  item.foodEngName.toLowerCase().contains(
+                    _searchQuery.toLowerCase(),
+                  ) ||
+                  item.foodGujName.toLowerCase().contains(
+                    _searchQuery.toLowerCase(),
+                  ),
+            );
 
         print(itemsMatch);
         return pradeshNameMatch || itemsMatch;
       }).toList();
     }
 
-    print("${UserStorageHelper.getUserData()?.data?.pradeshAssignment?.pradeshId}ddd");
+    print(
+      "${UserStorageHelper.getUserData()?.data?.pradeshAssignment?.pradeshId}ddd",
+    );
 
     _filteredPradeshs.removeWhere((element) {
       print("${element.pradeshId}");
-      return element.pradeshId != (UserStorageHelper.getUserData()?.data?.pradeshAssignment?.pradeshId??0);
-    } ,);
+      return element.pradeshId !=
+          (UserStorageHelper.getUserData()
+                  ?.data
+                  ?.pradeshAssignment
+                  ?.pradeshId ??
+              0);
+    });
   }
-  Widget _buildActionButtons(int cardIndex,{String? eventId,String? pradeshId,String? pradeshName}) {
+
+  Widget _buildActionButtons(
+    int cardIndex, {
+    String? eventId,
+    String? pradeshId,
+    String? pradeshName,
+  }) {
     return Row(
       children: [
         Expanded(
@@ -617,7 +676,16 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () {
-              Navigator.push(context, CupertinoPageRoute(builder: (context) => UserFoodItemsScreen(eventId: eventId??"",pradeshId: pradeshId??"",pradeshName: pradeshName??"",),));
+              Navigator.push(
+                context,
+                CupertinoPageRoute(
+                  builder: (context) => UserFoodItemsScreen(
+                    eventId: eventId ?? "",
+                    pradeshId: pradeshId ?? "",
+                    pradeshName: pradeshName ?? "",
+                  ),
+                ),
+              );
             },
             icon: const Icon(Icons.history, size: 18),
             label: const Text('History'),
@@ -637,6 +705,7 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
       ],
     );
   }
+
   void _showLoadingDialog() {
     showDialog(
       context: context,
@@ -653,8 +722,6 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
       ),
     );
   }
-
-
 
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -673,8 +740,6 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
     );
   }
 
-
-
   Future<void> _shareCard(int cardIndex) async {
     try {
       foodDistributionController.isShowLeftQty.value = true;
@@ -692,7 +757,7 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
 
       // Now we can safely cast to RenderRepaintBoundary
       RenderRepaintBoundary boundary =
-      cardKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+          cardKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
 
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
       ByteData? byteData = await image.toByteData(
@@ -733,9 +798,6 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
     }
   }
 
-
-
-
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       foregroundColor: Colors.white,
@@ -744,20 +806,21 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
         style: TextStyle(letterSpacing: 1, color: Colors.white),
       ),
       actions: [
-
         IconButton(
-          onPressed: (){
+          onPressed: () {
             UserStorageHelper.clearUserData();
-            Navigator.pushReplacement(context, CupertinoPageRoute(builder: (context) => LoginScreen(),));
+            Navigator.pushReplacement(
+              context,
+              CupertinoPageRoute(builder: (context) => LoginScreen()),
+            );
           },
-          icon: Icon(Icons.logout,color: Colors.white60,),
+          icon: Icon(Icons.logout, color: Colors.white60),
         ),
       ],
       backgroundColor: Colors.deepOrange,
       elevation: 2,
     );
   }
-
 }
 
 // lib/widgets/mobile/mobile_user_header.dart
@@ -944,5 +1007,3 @@ class Contact {
 
   const Contact({required this.name, required this.phone, this.email});
 }
-
-
