@@ -1,11 +1,12 @@
 import 'package:ankoot_new/api/api_client.dart';
 import 'package:ankoot_new/api/api_endpoints.dart';
-import 'package:ankoot_new/controller/food_distribution_controller.dart';
+import 'package:ankoot_new/api/server/general_service.dart';
 import 'package:ankoot_new/models/PrasadmRecords.dart';
 import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:ankoot_new/widgets/search_bar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'dart:convert';
 
 import 'package:get/get.dart' hide Response;
@@ -118,7 +119,7 @@ class _PradeshPacketDistributionScreenState
     try {
       Response response = await ApiClient.post(
         ApiEndpoints.getPrasadStock,
-        data: {"event_id": 1},
+        data: {"event_id": eventId},
       );
 
       if (response.statusCode == 200) {
@@ -138,23 +139,49 @@ class _PradeshPacketDistributionScreenState
     await _loadPrasadData();
   }
 
-  // Calculate totals from filtered data
-  int get totalBoxes => filteredPradeshData.fold(
+// ✅ Calculate totals from filtered data
+  int get totalBoxes => filteredPradeshData.fold<int>(
     0,
-    (sum, item) => sum + (item.pradeshTotals?.totalBoxQty ?? 0),
+        (sum, item) {
+      final qty = int.tryParse(item.prasadRecords?.isNotEmpty == true
+          ? item.prasadRecords!.first.prasadBoxQty ?? "0"
+          : "0");
+      return sum + (qty ?? 0);
+    },
   );
-  int get totalPackets => filteredPradeshData.fold(
+
+  int get totalPackets => filteredPradeshData.fold<int>(
     0,
-    (sum, item) => sum + (item.pradeshTotals?.totalPacketQty ?? 0),
+        (sum, item) {
+      final qty = int.tryParse(item.prasadRecords?.isNotEmpty == true
+          ? item.prasadRecords!.first.prasadPacketQty ?? "0"
+          : "0");
+      return sum + (qty ?? 0);
+    },
   );
-  int get totalDeliveredBoxes => filteredPradeshData.fold(
+
+  int get totalDeliveredBoxes => filteredPradeshData.fold<int>(
     0,
-    (sum, item) => sum + (item.pradeshTotals?.totalDeliverBoxQty ?? 0),
+        (sum, item) {
+      final qty = int.tryParse(item.prasadRecords?.isNotEmpty == true
+          ? item.prasadRecords!.first.deliverBoxQty ?? "0"
+          : "0");
+      return sum + (qty ?? 0);
+    },
   );
-  int get totalDeliveredPackets => filteredPradeshData.fold(
+
+  int get totalDeliveredPackets => filteredPradeshData.fold<int>(
     0,
-    (sum, item) => sum + (item.pradeshTotals?.totalDeliverPacketQty ?? 0),
+        (sum, item) {
+      final qty = int.tryParse(item.prasadRecords?.isNotEmpty == true
+          ? item.prasadRecords!.first.deliverPacketQty ?? "0"
+          : "0");
+      return sum + (qty ?? 0);
+    },
   );
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -414,12 +441,18 @@ class _PradeshPacketDistributionScreenState
 
   Widget _buildDataRow(int index) {
     final data = filteredPradeshData[index];
-    final pradeshTotals = data.pradeshTotals;
+
     final pradeshDetails = data.pradeshDetails;
 
 
+    PrasadRecords prasadRecords = PrasadRecords();
+    if((data.prasadRecords?.length??0) > 0){
+      prasadRecords = data.prasadRecords?.first??PrasadRecords();
+    }
+
+
     return InkWell(
-      onTap: () => _showDeliveryBottomSheet(context, data, index),
+      onTap: () => _showDeliveryBottomSheet(context, data,prasadRecords, index),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -433,24 +466,29 @@ class _PradeshPacketDistributionScreenState
               flex: 4,
               isName: true,
             ),
+
             _buildDeliveryCell(
-              pradeshTotals?.totalBoxQty ?? 0,
-              pradeshTotals?.totalDeliverBoxQty ?? 0,
+              int.tryParse(prasadRecords.prasadBoxQty??"0") ?? 0,
+              int.tryParse(prasadRecords.deliverBoxQty ?? "0") ?? 0,
+
               flex: 2,
               color: Colors.blue.shade700,
             ),
             _buildDeliveryCell(
-              pradeshTotals?.totalBoxQty ?? 0,
-              pradeshTotals?.totalDeliverBoxQty ?? 0,
+              int.tryParse(prasadRecords.prasadBoxQty ?? "0") ?? 0,
+              int.tryParse(prasadRecords.deliverBoxQty ?? "0") ?? 0,
+
               flex: 2,
               color: Colors.red.shade700,
             ),
             _buildDeliveryCell(
-              pradeshTotals?.totalPacketQty ?? 0,
-              pradeshTotals?.totalDeliverPacketQty ?? 0,
+              int.tryParse(prasadRecords.prasadPacketQty ?? "0") ?? 0,
+              int.tryParse(prasadRecords.deliverPacketQty ?? "0") ?? 0,
+
               flex: 2,
               color: Colors.yellow.shade700,
             ),
+
           ],
         ),
       ),
@@ -535,89 +573,34 @@ class _PradeshPacketDistributionScreenState
     );
   }
 
-  // Show Pradesh Filter Dialog
-  void _showPradeshFilterDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Filter by Pradesh'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: Text('All Pradesh'),
-                leading: Radio<String?>(
-                  value: null,
-                  groupValue: selectedPradeshId,
-                  onChanged: (String? value) {
-                    Navigator.pop(context);
-                    setState(() {
-                      selectedPradeshId = value;
-                    });
-                    _loadPrasadData();
-                  },
-                ),
-              ),
-              ...pradeshData.map((pradesh) {
-                final pradeshId = pradesh.pradeshDetails?.pradeshId?.toString();
-                final pradeshName = pradesh.pradeshDetails?.pradeshEngName;
-                return ListTile(
-                  title: Text(pradeshName ?? 'Unknown'),
-                  leading: Radio<String?>(
-                    value: pradeshId,
-                    groupValue: selectedPradeshId,
-                    onChanged: (String? value) {
-                      Navigator.pop(context);
-                      setState(() {
-                        selectedPradeshId = value;
-                      });
-                      _loadPrasadData();
-                    },
-                  ),
-                );
-              }).toList(),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+
 
   void _showDeliveryBottomSheet(
     BuildContext context,
     PradeshWiseData data,
+  PrasadRecords prasadRecords,
     int index,
   ) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DeliveryBottomSheet(
-        pradeshWiseData: data,
-        onSave: (updatedData) async{
+    if(prasadRecords.prasadId != null){
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => DeliveryBottomSheet(
+          pradeshWiseData: data,
+          prasadRecords: prasadRecords,
+          onSave: () async{
+            //5555
+            setState(() {
 
-          setState(() {
-            // Update in both original and filtered lists
-            // final originalIndex = pradeshData.indexWhere(
-            //   (item) =>
-            //       item.pradeshDetails?.pradeshId ==
-            //       updatedData.pradeshDetails?.pradeshId,
-            // );
-            // if (originalIndex != -1) {
-            //   pradeshData[originalIndex] = updatedData;
-            // }
-            // filteredPradeshData[index] = updatedData;
-          });
-        },
-      ),
-    );
+            });
+          },
+        ),
+      );
+    }else{
+      EasyLoading.showError("Please first Request Prasad.");
+    }
+
   }
 
   Widget _buildDataCell(
@@ -645,12 +628,13 @@ class _PradeshPacketDistributionScreenState
 // Updated DeliveryBottomSheet remains the same
 class DeliveryBottomSheet extends StatefulWidget {
   final PradeshWiseData pradeshWiseData;
-  final Function(PradeshWiseData) onSave;
-
-  const DeliveryBottomSheet({
+  final Function() onSave;
+  PrasadRecords prasadRecords;
+   DeliveryBottomSheet({
     Key? key,
     required this.pradeshWiseData,
     required this.onSave,
+    required this.prasadRecords
   }) : super(key: key);
 
   @override
@@ -658,34 +642,27 @@ class DeliveryBottomSheet extends StatefulWidget {
 }
 
 class _DeliveryBottomSheetState extends State<DeliveryBottomSheet> {
-  late TextEditingController boxController;
-  late TextEditingController packetController;
+
   late TextEditingController deliveredBoxController;
   late TextEditingController deliveredPacketController;
 
   @override
   void initState() {
     super.initState();
-    final totals = widget.pradeshWiseData.pradeshTotals;
+    final totals = widget.prasadRecords;
 
-    boxController = TextEditingController(
-      text: (totals?.totalBoxQty ?? 0).toString(),
-    );
-    packetController = TextEditingController(
-      text: (totals?.totalPacketQty ?? 0).toString(),
-    );
+
     deliveredBoxController = TextEditingController(
-      text: (totals?.totalDeliverBoxQty ?? 0).toString(),
+      text: (totals.deliverBoxQty ??"").toString(),
     );
     deliveredPacketController = TextEditingController(
-      text: (totals?.totalDeliverPacketQty ?? 0).toString(),
+      text: (totals.deliverPacketQty ?? "").toString(),
     );
   }
 
   @override
   void dispose() {
-    boxController.dispose();
-    packetController.dispose();
+
     deliveredBoxController.dispose();
     deliveredPacketController.dispose();
     super.dispose();
@@ -773,36 +750,37 @@ class _DeliveryBottomSheetState extends State<DeliveryBottomSheet> {
     );
   }
 
-  void _saveChanges() {
+  Future<void> _saveChanges()async {
 
-    print("ddd ${widget.pradeshWiseData.prasadRecords}");
-    Map<String,dynamic> data = {
-      "table":"prasadStock",
-      "id":widget.pradeshWiseData.prasadRecords?.first.prasadId,
-      "deliver_box_qty":  int.tryParse(deliveredBoxController.text) ?? 0,
-      "deliver_packet_qty":  int.tryParse(deliveredPacketController.text) ?? 0,
-      "person_name":"${UserStorageHelper.getUserData()?.data?.user?.userName.toString() ??"Admin"}",
-      "person_mobile":"${UserStorageHelper.getUserData()?.data?.user?.userMobile.toString() ??"369"}"
-    };
+    print("ddd ${widget.prasadRecords.toJson()}");
+
+    if((widget.pradeshWiseData.prasadRecords?.length  ?? 0)> 0){
+      Map<String,dynamic> data = {
+        "table":"prasadStock",
+        "id":widget.pradeshWiseData.prasadRecords?.first.prasadId,
+        "deliver_box_qty":  int.tryParse(deliveredBoxController.text) ?? 0,
+        "deliver_packet_qty":  int.tryParse(deliveredPacketController.text) ?? 0,
+        "person_name":"${UserStorageHelper.getUserData()?.data?.user?.userName.toString() ??"Admin"}",
+        "person_mobile":"${UserStorageHelper.getUserData()?.data?.user?.userMobile.toString() ??"369"}"
+      };
+
+      bool temp =  await GeneralService.updateData(data);
+      if(temp){
+        EasyLoading.showSuccess("Successfully Deliver prasad");
+        widget.onSave();
+        Navigator.pop(context);
+      }else{
+        EasyLoading.showSuccess("Prasad deliver stock not updated.");
+        Navigator.pop(context);
+      }
+    }
 
 
-    print(data);
 
-    final updatedTotals = PradeshTotals(
-      totalBoxQty: int.tryParse(boxController.text) ?? 0,
-      totalPacketQty: int.tryParse(packetController.text) ?? 0,
-      totalDeliverBoxQty: int.tryParse(deliveredBoxController.text) ?? 0,
-      totalDeliverPacketQty: int.tryParse(deliveredPacketController.text) ?? 0,
-      totalRecords: widget.pradeshWiseData.pradeshTotals?.totalRecords ?? 0,
-    );
 
-    final updatedData = PradeshWiseData(
-      pradeshDetails: widget.pradeshWiseData.pradeshDetails,
-      prasadRecords: widget.pradeshWiseData.prasadRecords,
-      pradeshTotals: updatedTotals,
-    );
+    // print(data);
 
-    widget.onSave(updatedData);
-    Navigator.pop(context);
+
+
   }
 }

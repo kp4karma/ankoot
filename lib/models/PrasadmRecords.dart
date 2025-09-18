@@ -246,11 +246,11 @@ class PrasadRecords {
     eventDetails = json['event_details'] != null
         ? new EventDetails.fromJson(json['event_details'])
         : null;
-    prasadBoxQty = json['prasad_box_qty'];
+    prasadBoxQty = json['prasad_box_qty'].replaceAll(".00", "");
     prasadId = json['prasad_id'];
-    prasadPacketQty = json['prasad_packet_qty'];
-    deliverBoxQty = json['deliver_box_qty'];
-    deliverPacketQty = json['deliver_packet_qty'];
+    prasadPacketQty = json['prasad_packet_qty'].toString().replaceAll(".00", "");
+    deliverBoxQty = json['deliver_box_qty'].toString().replaceAll(".00", "");
+    deliverPacketQty = json['deliver_packet_qty'].toString().replaceAll(".00", "");
     personMobile = json['person_mobile'];
     personName = json['person_name'];
     status = json['status'];
