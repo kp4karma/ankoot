@@ -65,6 +65,9 @@ class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
         ),
         Expanded(
           child: MainContent(
+            onUpdateEvent: () {
+
+            },
             selectedPradesh: pradeshController.selectedPradesh.value,
              onNotifyPressed: _onNotifyPressed,
           ),

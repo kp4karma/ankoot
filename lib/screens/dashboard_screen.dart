@@ -115,13 +115,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Row(
+
+    return Obx(() {
+      print("objectobj ${pradeshController.selectedEventIndex.value}");
+      return Row(
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 16, bottom: 16),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Sidebar(
+              key: UniqueKey(),
               onPradeshSelected: _onPradeshSelected,
               selectedPradesh: pradeshController.selectedPradesh.value, // <-- pass selected
             ),
@@ -129,11 +133,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         Expanded(
           child: MainContent(
+            onUpdateEvent: () {
+
+            },
             selectedPradesh: pradeshController.selectedPradesh.value,
             onNotifyPressed: _onNotifyPressed,
           ),
         ),
       ],
-    ),);
+    );});
   }
 }

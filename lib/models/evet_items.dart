@@ -203,6 +203,7 @@ class Event {
   final String eventData;
   final String eventMaxPrasadDate;
   final String eventItemLastDate;
+  final bool? isMessage;
   PrasadStock? prasadStock = PrasadStock();
   final List<FoodItem> items;
   final int totalItemsCount;
@@ -214,6 +215,7 @@ class Event {
     required this.eventItemLastDate,
     required this.eventMaxPrasadDate,
     required this.eventData,
+    required this.isMessage,
     required this.status,
     required this.prasadStock,
     required this.totalItemsCount,
@@ -226,6 +228,7 @@ class Event {
       eventName: json['event_name'] ?? '',
       status: json['status'] ?? '',
       eventData: json['event_date'] ?? '',
+      isMessage: json['is_message'] ?? '',
       eventItemLastDate: json['event_item_last_date'] ?? '',
       eventMaxPrasadDate: json['event_max_prasad_date'] ?? '',
       prasadStock: json['prasadStock'] != null

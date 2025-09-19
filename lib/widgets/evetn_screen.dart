@@ -14,13 +14,14 @@ import 'custom_add_item_button.dart';
 
 // Main Screen Widget
 class EventScreen extends StatefulWidget {
-  EventScreen({Key? key}) : super(key: key);
+
+  EventScreen({Key? key, }) : super(key: key);
   @override
   _EventScreenState createState() => _EventScreenState();
 }
 
 class _EventScreenState extends State<EventScreen> {
-  int selectedEventIndex = 1;
+
   String searchQuery = '';
 
   final foodDistributionController = Get.put(FoodDistributionController());
@@ -46,7 +47,7 @@ class _EventScreenState extends State<EventScreen> {
     if (currentPradesh != null &&
         foodDistributionController.uniqueEvents.isNotEmpty) {
       setState(() {
-        selectedEventIndex =
+        foodDistributionController.selectedEventIndex.value =
             foodDistributionController.uniqueEvents.first.eventId;
       });
     }
@@ -65,7 +66,7 @@ class _EventScreenState extends State<EventScreen> {
 
   List<FoodItem> _getFilteredItems() {
     print(
-      'Getting filtered items for event: $selectedEventIndex, search: "$searchQuery"',
+      'Getting filtered items for event:, search: "$searchQuery"',
     ); // Debug log
 
     // Get the selected pradesh
@@ -84,11 +85,11 @@ class _EventScreenState extends State<EventScreen> {
 
     // Get the selected event
     final selectedEvent = selectedPradesh.events
-        .where((element) => element.eventId == selectedEventIndex)
+        .where((element) => element.eventId == foodDistributionController.selectedEventIndex.value )
         .firstOrNull;
 
     if (selectedEvent == null) {
-      print('No event found with ID: $selectedEventIndex'); // Debug log
+      print('No event found with ID:         foodDistributionController.selectedEventIndex.value '); // Debug log
       return [];
     }
 
@@ -138,13 +139,14 @@ class _EventScreenState extends State<EventScreen> {
             child: Column(
               children: [
                 EventSelectionCard(
-                  key: ValueKey('event-$selectedEventIndex'),
+                  key: ValueKey('event-${foodDistributionController.selectedEventIndex.value }'),
                   events: foodDistributionController.uniqueEvents,
-                  selectedIndex: selectedEventIndex,
+                  selectedIndex:     foodDistributionController.selectedEventIndex.value,
                   onEventSelected: (index) {
                     setState(() {
-                      selectedEventIndex = index;
+                      foodDistributionController.selectedEventIndex.value = index;
                     });
+
                   },
                   onAddNew: () {
                     showDialog(
@@ -174,7 +176,7 @@ class _EventScreenState extends State<EventScreen> {
                     final pradeshId = foodDistributionController.selectedPradesh.value.pradeshId;
                     return Expanded(
                       child: ItemPlutoGrid(
-                        key: ValueKey('grid-$pradeshId-$selectedEventIndex-$searchQuery'),
+                        key: UniqueKey(),
                         items: _getFilteredItems(),
                         onSaveQty: _onSaveQty,
                       ),

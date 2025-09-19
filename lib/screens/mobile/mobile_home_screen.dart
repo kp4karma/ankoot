@@ -130,6 +130,7 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
                                                         .value,
                                                 orElse: () => Event(
                                                   eventId: 0,
+                                                  isMessage: false,
                                                   eventName: "",         eventMaxPrasadDate: DateTime.now().toString(),
                                                   eventItemLastDate: DateTime.now().toString(),
                                                   prasadStock: PrasadStock(),
@@ -149,7 +150,7 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
                                               Text(
                                                 "${pradesh.events.singleWhere(
                                                   (element) => element.eventId == foodDistributionController.selectedEventIndex.value,
-                                                  orElse: () => Event(         eventMaxPrasadDate: DateTime.now().toString(),
+                                                  orElse: () => Event(            isMessage: false,       eventMaxPrasadDate: DateTime.now().toString(),
                                                       eventItemLastDate: DateTime.now().toString(),eventId: 0, eventData: DateTime.now().toString(), eventName: "", items: [], status: "", prasadStock: PrasadStock(), totalItemsCount: 0),
                                                 ).eventName}",
                                                 style: TextStyle(
@@ -161,7 +162,7 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
                                               Text(
                                                 "Event Date: ${DateFormat("dd-MM-yyyy").format(DateTime.parse(pradesh.events.singleWhere(
                                                   (element) => element.eventId == foodDistributionController.selectedEventIndex.value,
-                                                  orElse: () => Event(         eventMaxPrasadDate: DateTime.now().toString(),
+                                                  orElse: () => Event(            isMessage: false,       eventMaxPrasadDate: DateTime.now().toString(),
                                                       eventItemLastDate: DateTime.now().toString(),eventId: 0, eventName: "", items: [], eventData: DateTime.now().toString(), status: "", prasadStock: PrasadStock(), totalItemsCount: 0),
                                                 ).eventData))}",
                                                 style: TextStyle(
@@ -196,7 +197,7 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
                                                           foodDistributionController
                                                               .selectedEventIndex
                                                               .value,
-                                                      orElse: () => Event(         eventMaxPrasadDate: DateTime.now().toString(),
+                                                      orElse: () => Event(               isMessage: false,    eventMaxPrasadDate: DateTime.now().toString(),
                                                         eventItemLastDate: DateTime.now().toString(),
                                                         eventData: DateTime.now()
                                                             .toString(),
@@ -435,7 +436,7 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
                                                                   child: Text(
                                                                     "નોધ:- તા. ${DateFormat("dd-MM-yyyy").format(DateTime.parse(pradesh.events.singleWhere(
                                                                           (element) => element.eventId == foodDistributionController.selectedEventIndex.value,
-                                                                      orElse: () => Event(         eventMaxPrasadDate: DateTime.now().toString(),
+                                                                      orElse: () => Event(             isMessage: false,      eventMaxPrasadDate: DateTime.now().toString(),
                                                                           eventItemLastDate: DateTime.now().toString(),eventId: 0, eventName: "", items: [], eventData: DateTime.now().toString(), status: "", prasadStock: PrasadStock(), totalItemsCount: 0),
                                                                     ).eventItemLastDate))}. સુધી માં AVD મંદિર એ મોકલી આપવું.",
                                                                     style: TextStyle(
@@ -495,7 +496,7 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
                                       foodDistributionController
                                           .selectedEventIndex
                                           .value,
-                                  orElse: () => Event(         eventMaxPrasadDate: DateTime.now().toString(),
+                                  orElse: () => Event(                isMessage: false,   eventMaxPrasadDate: DateTime.now().toString(),
                                     eventItemLastDate: DateTime.now().toString(),
                                     eventData: DateTime.now()
                                         .toString(),

@@ -18,6 +18,7 @@ class ApiConfig {
   // static const _devApiDomain = "10.122.224.5:3690";
   // static const _devApiDomain = "192.168.201.157:3690";
   static const _profileApiDomain = "";
+
   static const _prodApiDomain = "";
 
   static const String companyId = "";

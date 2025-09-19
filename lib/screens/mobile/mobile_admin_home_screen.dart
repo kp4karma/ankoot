@@ -219,7 +219,7 @@ class _MobileHomeScreenState extends State<MobileAdminHomeScreen> {
                                                           .selectedEventIndex
                                                           .value,
                                                   orElse: () => Event(
-                                                    eventId: 0,
+                                                    eventId: 0,isMessage: false,
                                                     eventData: DateTime.now().toString(),
                                                     eventMaxPrasadDate: DateTime.now().toString(),
                                                     eventItemLastDate: DateTime.now().toString(),

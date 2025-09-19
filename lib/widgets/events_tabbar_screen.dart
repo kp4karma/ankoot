@@ -189,28 +189,28 @@ class EventsScreen extends StatelessWidget {
                 ),
               ],
             ),
-            trailing: PopupMenuButton<String>(
-              onSelected: (value) => _handleMenuAction(value, event),
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: ListTile(
-                    leading: Icon(Icons.edit),
-                    title: Text('Edit'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: ListTile(
-                    leading: Icon(Icons.delete, color: Colors.red),
-                    title: Text('Delete',
-                        style: TextStyle(color: Colors.red)),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              ],
-            ),
+            // trailing: PopupMenuButton<String>(
+            //   onSelected: (value) => _handleMenuAction(value, event),
+            //   itemBuilder: (context) => [
+            //     const PopupMenuItem(
+            //       value: 'edit',
+            //       child: ListTile(
+            //         leading: Icon(Icons.edit),
+            //         title: Text('Edit'),
+            //         contentPadding: EdgeInsets.zero,
+            //       ),
+            //     ),
+            //     const PopupMenuItem(
+            //       value: 'delete',
+            //       child: ListTile(
+            //         leading: Icon(Icons.delete, color: Colors.red),
+            //         title: Text('Delete',
+            //             style: TextStyle(color: Colors.red)),
+            //         contentPadding: EdgeInsets.zero,
+            //       ),
+            //     ),
+            //   ],
+            // ),
           ),
         );
       },
@@ -406,7 +406,7 @@ class EventsScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               eventController.deleteEvent(event.eventId);
-              Get.back();
+
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

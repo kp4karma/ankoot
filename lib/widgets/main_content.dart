@@ -13,11 +13,13 @@ import '../models/evet_items.dart';
 class MainContent extends StatefulWidget {
   final Pradesh selectedPradesh;
   final Function() onNotifyPressed;
+  final Function() onUpdateEvent;
 
   MainContent({
     super.key,
     required this.selectedPradesh,
     required this.onNotifyPressed,
+    required this.onUpdateEvent,
   });
 
   @override
@@ -105,7 +107,7 @@ class _MainContentState extends State<MainContent> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-              child: EventScreen(), // Placeholder
+              child: EventScreen(key: UniqueKey(),), // Placeholder
             ),
           ),
         ],
@@ -159,8 +161,6 @@ class _MainContentState extends State<MainContent> {
           bool success = await notificationService.notifyPradesh(
             pradeshId: pradeshController.selectedPradesh.value?.pradeshId.toString() ?? '', title: 'Assigned Annakut Items', message: 'Refer and Check all items',
           );
-
-          Navigator.of(context).pop(); // close dialog
 
           if (success && pradeshController.selectedPradesh.value != null) {
             ScaffoldMessenger.of(context).showSnackBar(

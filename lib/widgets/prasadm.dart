@@ -329,7 +329,7 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
                             child: Text(
                               "નોધ:- તા. ${DateFormat("dd-MM-yyyy").format(DateTime.parse(foodDistributionController.uniqueEvents.singleWhere(
                                 (element) => element.eventId == foodDistributionController.selectedEventIndex.value,
-                                orElse: () => Event(eventMaxPrasadDate: DateTime.now().toString(), eventItemLastDate: DateTime.now().toString(), eventId: 0, eventName: "", items: [], eventData: DateTime.now().toString(), status: "", prasadStock: PrasadStock(), totalItemsCount: 0),
+                                orElse: () => Event(          isMessage: false,eventMaxPrasadDate: DateTime.now().toString(), eventItemLastDate: DateTime.now().toString(), eventId: 0, eventName: "", items: [], eventData: DateTime.now().toString(), status: "", prasadStock: PrasadStock(), totalItemsCount: 0),
                               ).eventMaxPrasadDate))} સુધીમાં તમારી પ્રસાદની સંખ્યા અપડેટ કરી દેવી.  ",
                               style: TextStyle(
                                 fontSize: 14,
@@ -381,7 +381,7 @@ class _PrasadamWidgetState extends State<PrasadamWidget> {
       (element) =>
           element.eventId ==
           foodDistributionController.selectedEventIndex.value,
-      orElse: () => Event(
+      orElse: () => Event(          isMessage: false,
         eventMaxPrasadDate: DateTime.now().toString(),
         eventItemLastDate: DateTime.now().toString(),
         eventId: 0,
