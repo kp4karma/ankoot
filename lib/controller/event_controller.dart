@@ -1,5 +1,6 @@
 // lib/controllers/event_controller.dart
 
+import 'package:ankoot_new/controller/food_distribution_controller.dart';
 import 'package:get/get.dart';
 import '../api/server/event_service.dart';
 import '../api/server/general_service.dart';
@@ -20,10 +21,13 @@ class EventController extends GetxController {
   Future<void> fetchEvents() async {
     try {
       isLoading.value = true;
+      isDefaultData.value = true;
       final result = await GeneralService.fetchEvents();
+      await Get.find<FoodDistributionController>().loadData();
       events.assignAll(result);
     } finally {
       isLoading.value = false;
+      isDefaultData.value = false;
     }
   }
 

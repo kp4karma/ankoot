@@ -1,3 +1,4 @@
+import 'package:ankoot_new/controller/event_controller.dart';
 import 'package:ankoot_new/theme/storage_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:ankoot_new/theme/app_theme.dart';
@@ -161,6 +162,10 @@ class _MainContentState extends State<MainContent> {
           bool success = await notificationService.notifyPradesh(
             pradeshId: pradeshController.selectedPradesh.value?.pradeshId.toString() ?? '', title: 'Assigned Annakut Items', message: 'Refer and Check all items',
           );
+
+          Get.find<EventController>().isDefaultData.value = true;
+         await pradeshController.loadData();
+          Get.find<EventController>().isDefaultData.value = false;
 
           if (success && pradeshController.selectedPradesh.value != null) {
             ScaffoldMessenger.of(context).showSnackBar(
