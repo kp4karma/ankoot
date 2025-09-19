@@ -46,7 +46,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'HP-Prasadam',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
