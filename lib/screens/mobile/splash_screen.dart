@@ -187,8 +187,8 @@ class _SplashScreenState extends State<SplashScreen>
                     child: FadeTransition(
                       opacity: _fadeAnimation,
                       child: Container(
-                        width: MediaQuery.of(context).size.width * 0.40,
-                        height: MediaQuery.of(context).size.width * 0.40,
+                        width: kIsWeb ? MediaQuery.of(context).size.width * 0.10:MediaQuery.of(context).size.width * 0.40,
+                        height:kIsWeb ? MediaQuery.of(context).size.width * 0.10: MediaQuery.of(context).size.width * 0.40,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,

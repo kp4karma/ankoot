@@ -317,16 +317,30 @@ class _SweetItemsScreenState extends State<SweetItemsScreen> {
         );
       }).toList();
 
+
       // ✅ Calculate totals for this Pradesh group
       final totalAssigned = items.fold<int>(0, (sum, item) => sum + (item['assignedQty'] as int));
       final totalAvailable = items.fold<int>(0, (sum, item) => sum + (item['availableQty'] as int));
       final totalShortage = items.fold<int>(0, (sum, item) => sum + (item['shortageQty'] as int));
 
-      // Create Pradesh group row with totals in header
-      final pradeshRow = PlutoRow(
+      childRows.add(PlutoRow(
         cells: {
           'pradesh': PlutoCell(value: pradeshName),
           'itemName': PlutoCell(value: 'TOTAL'),
+          'assignedQty': PlutoCell(value: totalAssigned),
+          'availableQty': PlutoCell(value: totalAvailable),
+          'shortageQty': PlutoCell(value: totalShortage),
+          'unit': PlutoCell(value: ''), // keep blank
+          'notify': PlutoCell(value: ''),
+        },
+      ));
+
+      // Create Pradesh group row with totals in header
+      final pradeshRow = PlutoRow(
+
+        cells: {
+          'pradesh': PlutoCell(value: pradeshName),
+          'itemName': PlutoCell(value: 'TOTAL Main'),
           'assignedQty': PlutoCell(value: totalAssigned),
           'availableQty': PlutoCell(value: totalAvailable),
           'shortageQty': PlutoCell(value: totalShortage),

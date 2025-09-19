@@ -5,6 +5,7 @@ import 'package:ankoot_new/api/services/fcm_service.dart';
 import 'package:ankoot_new/models/event_data_model.dart';
 import 'package:ankoot_new/models/evet_items.dart';
 import 'package:ankoot_new/theme/storage_helper.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:dio/dio.dart';
@@ -134,7 +135,10 @@ class GeneralService {
 
         final NotificationService notificationService = Get.find();
 
-        await notificationService.initializeUserSubscriptions(eventIds: [],pradeshIds: ["${userDataModel.data?.pradeshAssignment?.pradeshId.toString()}"],userId: user.userId.toString(), userType: user.userType.toString());
+        if(!kIsWeb){
+          await notificationService.initializeUserSubscriptions(eventIds: [],pradeshIds: ["${userDataModel.data?.pradeshAssignment?.pradeshId.toString()}"],userId: user.userId.toString(), userType: user.userType.toString());
+
+        }
         showToast(
           context: context,
           title: msg,
@@ -291,6 +295,7 @@ class GeneralService {
       );
       return data;
     } catch (e) {
+      print("sdsdds $e");
       throw Exception('Failed to load data: $e');
     }
   }

@@ -38,7 +38,7 @@ class PradeshController {
   static Future<bool> updatePradeshItemData({
     required String pradeshId,
     required String eventId,
-    required int id,
+    required String id,
     required String itemId,
     required String quantity,
     required String pradeshEngName,
@@ -73,7 +73,7 @@ class PradeshController {
   static Future<bool> deletePradeshItemData({
     required String pradeshId,
     required String eventId,
-    required int id,
+    required String id,
     required String personName,
     required String personMobile,
 

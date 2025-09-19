@@ -26,9 +26,7 @@ class MobileHomeScreen extends StatefulWidget {
 
 class _MobileHomeScreenState extends State<MobileHomeScreen> {
   EventController eventController = Get.put(EventController());
-  FoodDistributionController foodDistributionController = Get.put(
-    FoodDistributionController(),
-  );
+  FoodDistributionController foodDistributionController = Get.put(FoodDistributionController());
 
   final GlobalKey _cardKey = GlobalKey();
   final List<GlobalKey> _cardKeys = [];
@@ -57,6 +55,7 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
         }
       });
     });
+    // foodDistributionController.loadData();
   }
 
   @override

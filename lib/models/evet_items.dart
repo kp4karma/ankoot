@@ -91,7 +91,7 @@ class PradeshUser {
 
 class FoodItem {
   final int foodItemId;
-  final int Id;
+  final String Id;
   final String foodEngName;
   final String foodGujName;
   final String foodUnit;
@@ -114,10 +114,10 @@ class FoodItem {
 
   factory FoodItem.fromJson(Map<String, dynamic> json) {
     return FoodItem(
-      foodItemId: json['food_item_id'] ?? 0,
+      foodItemId:int.tryParse( json['food_item_id'].toString()) ?? 0,
       foodEngName: json['food_eng_name'] ?? '',
       foodGujName: json['food_guj_name'] ?? '',
-      Id: json['id'] ?? '',
+      Id: json['id'].toString() ?? "0",
       foodUnit: json['food_unit'] ?? '',
       foodCategory: json['food_category'] ?? '',
       totalQty: json['total_qty'] ?? 0,
@@ -153,7 +153,7 @@ class FoodItem {
   }) {
     return FoodItem(
       foodItemId: foodItemId ?? this.foodItemId,
-      Id: foodItemId ?? this.Id,
+      Id: Id.toString() ?? this.Id,
       foodEngName: foodEngName ?? this.foodEngName,
       foodGujName: foodGujName ?? this.foodGujName,
       foodUnit: foodUnit ?? this.foodUnit,
